@@ -32,7 +32,7 @@ class Device(BaseDevice):
     def identify(self) -> str:
         request = IdentifyRequest()
 
-        return self.query()
+        return self.query(request)
 
     def measure_voltage(self, integration_time: int, channel: int) -> float:
         request = MeasureVoltageRequest(
