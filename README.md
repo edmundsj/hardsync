@@ -27,6 +27,7 @@ In this example, we have two functions we would like to be able to call from the
 ```
 from dataclasses import dataclass
 from typing import Optional
+
 class Identify:
 	@dataclass
 	class Request:
@@ -37,7 +38,6 @@ class Identify:
 		response: str
 
 
-@dataclass
 class MeasureVoltage:
 	@dataclass
 	class Request:
@@ -98,10 +98,13 @@ We need to figure out how this will actually work. Putting communication initial
 ## Architecture
 This library is based on simple request/response-based communication. The software (client) sends a request to the device, and the device returns a response. 
 
-### Target transpilation
-Supported targets:
-- cpp (no transpilation)
-- arduino
+You specify a *contract*, which is a set of *exchanges*, each of which contains a *request* and a *response*. By 
+default, the request is assumed to be initiated from the computer, although support for device-initiated 
+communication would be easy to add.
+
+### Supported Targets
+- `cpp` (no transpilation)
+- `arduino`
 
 
 ## Future (non-MVP)
@@ -109,6 +112,13 @@ Supported targets:
 - Support for sending requests from the device to the software
 - Support for overriding device implementation (see below)
 - Figure out how to check if generated code compiles.
+- "time" types
+- Multiple response fields
+- Variable-size arrays in requests and responses
+- Fixed-size arrays in requests and responses
+- Casting of non-string request types when received by device
+- Permit user to override default encoding per-exchange
+- More tests to verify edge cases, especially around type conversion
 
 ### Overriding device implementation
 By default, the `Device` class uses utf-8 (text-based) communication. This can lead to unacceptably bloated back-and-forth communication. Embedded systems requiring high speed can change the implementation to use binary-based comunication instead:
@@ -117,4 +127,30 @@ NOT YET IMPLEMENTED:
 ```
 python -m hardsync contract.py --protocol=binary
 ```
+Notes:
+- We need to introduce the concept of an "encoding" now, to avoid massive duplication. This "encoding" can be part 
+  of the Request/Response class definitions, or will default to a default one.
 
+## FAQ
+### Why generated code, and not a universal device library?
+First, embedded systems (the target for this library) have extremely tight memory constraints. Because of this, a 
+"universal" library that works with 
+all 
+microcontrollers, should it be built, would immediately be useless because it's too large for anyone to include. 
+Second, even on the client side where memory is less constrained, generating code allows for total flexibility on 
+the user-side should they wish to modify the code without the friction of contributing to an open-source project 
+(yes, that friction is still very much a barrier to entry).
+It also allows for easy integration with 
+build systems.
+
+### Why don't you support X platform?
+We hope to! I've made it as simple as possible to support a new platform, and I plan to provide specific 
+instructions on how to onboard new platforms that are not currently supported. If you need help onboarding a specific 
+platform, submit an issue on this repository. If you work for a company, feel free to reach out 
+directly if you 
+want 
+better support - I'm happy to provide paid support.
+
+### Why did you open-source this library?
+Partly because I hate closed-source tools that try to solve the same problem (I'm looking at you LabView). Partly 
+because I myself heavily use open-source libraries. And partly for the street cred ;)

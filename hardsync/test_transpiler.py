@@ -1,9 +1,36 @@
 import pytest
 from hardsync import test_data_dir
+from dataclasses import dataclass
+from hardsync.contracts import TypeMapping, Exchange
 from hardsync.transpiler import (
     template_to_regex, var_names_from_template, populate_template, transpile_template,
-    transpile, TARGETS, Targets
+    transpile, TARGETS, Targets, verify_template, ReplacementsMissingVariableError, TemplateMissingVariableError,
+    classes, ContractError, virtual_declarations, exchange_to_declaration, cpp_declaration, wrapper_declarations,
+    wrapper_result_invocation, wrapper_implementation, check_message_invocations, get_exchanges
 )
+from hardsync.encodings import AsciiEncoding
+from types import ModuleType
+import types
+
+STANDARD_MAPPING: TypeMapping = TypeMapping({float: 'double', int: 'int', str: "std::string", None: 'void'})
+
+
+class MeasureVoltage(Exchange):
+    @dataclass
+    class Encoding(AsciiEncoding):
+        pass
+
+    @dataclass
+    class Request:
+        channel: int
+
+    @dataclass
+    class Response:
+        voltage: float
+
+
+good_contract = types.ModuleType('good_contract')
+good_contract.MeasureVoltage = MeasureVoltage
 
 
 def test_template_to_regex_novar():
@@ -147,3 +174,176 @@ def test_transpile_cpp_files_no_transpilation():
         desired_text = desired_file.read()
         actual_text = transpile(input_text=input_text, template_mapping=mapping)
         assert actual_text == desired_text
+
+
+def test_verify_template_ok():
+    template = '{{key}}'
+    replacements = {'key': 'val'}
+    verify_template(template=template, replacements=replacements)
+
+
+def test_verify_template_missing_replacement():
+    template = '{{key}} {{missing_key}}'
+    replacements = {'key': 'val'}
+    with pytest.raises(ReplacementsMissingVariableError):
+        verify_template(template=template, replacements=replacements)
+
+
+def test_classes_good_contract():
+    good_contract = types.ModuleType('good_contract')
+
+    class MeasureVoltage:
+        @dataclass
+        class Request:
+            channel: int
+
+        @dataclass
+        class Response:
+            voltage: float
+
+    good_contract.MeasureVoltage = MeasureVoltage
+    desired_classes = classes(contract=good_contract)
+    assert MeasureVoltage in desired_classes
+
+
+def test_classes_bad_contract_no_response():
+    good_contract = types.ModuleType('good_contract')
+
+    class MeasureVoltage:
+        @dataclass
+        class Request:
+            channel: int
+
+    good_contract.MeasureVoltage = MeasureVoltage
+    with pytest.raises(ContractError):
+        classes(contract=good_contract)
+
+
+def test_classes_bad_contract_no_request():
+    good_contract = types.ModuleType('good_contract')
+
+    class MeasureVoltage:
+        @dataclass
+        class Response:
+            channel: int
+
+    good_contract.MeasureVoltage = MeasureVoltage
+    with pytest.raises(ContractError):
+        classes(contract=good_contract)
+
+
+def test_cpp_declaration():
+    actual = cpp_declaration(
+        return_type=float,
+        name='measureVoltage',
+        args={'channel': int},
+        type_mapping=STANDARD_MAPPING,
+        prefix='virtual',
+        suffix='const'
+    )
+    desired = 'virtual double measureVoltage(int channel) const;'
+    assert actual == desired
+
+
+def test_cpp_declaration_namespace():
+    actual = cpp_declaration(
+        return_type=None,
+        name='measureVoltage',
+        args={'channel': int},
+        type_mapping=STANDARD_MAPPING,
+        prefix='virtual',
+        suffix='const',
+        namespace='BaseCommunicationClient',
+    )
+    desired = 'virtual void BaseCommunicationClient::measureVoltage(int channel) const;'
+    assert actual == desired
+
+
+
+def test_class_to_cpp_declaration():
+    actual = exchange_to_declaration(
+        exchange=MeasureVoltage,
+        type_mapping=STANDARD_MAPPING,
+        prefix='virtual',
+        suffix='const'
+    )
+    desired = 'virtual double measureVoltage(int channel) const;'
+    assert actual == desired
+
+
+def test_virtual_declarations_single():
+    actual = virtual_declarations([MeasureVoltage], type_mapping=STANDARD_MAPPING)
+    desired = ['virtual double measureVoltage(int channel) const;']
+    assert actual == desired
+
+
+def test_virtual_declarations_double():
+    actual = virtual_declarations([MeasureVoltage, MeasureVoltage], type_mapping=STANDARD_MAPPING)
+    desired = ['virtual double measureVoltage(int channel) const;', 'virtual double measureVoltage(int channel) const;']
+    assert actual == desired
+
+
+def test_wrapper_declarations_single():
+    actual = wrapper_declarations([MeasureVoltage], type_mapping=STANDARD_MAPPING)
+    desired = ['double measureVoltage(int channel) const;']
+    assert actual == desired
+
+
+def test_wrapper_declarations_double():
+    actual = wrapper_declarations([MeasureVoltage, MeasureVoltage], type_mapping=STANDARD_MAPPING)
+    desired = ['double measureVoltage(int channel) const;', 'double measureVoltage(int channel) const;']
+    assert actual == desired
+
+
+def test_wrapper_response_lines_single():
+    actual = wrapper_result_invocation(MeasureVoltage, STANDARD_MAPPING)
+    desired = 'double voltage = this->measureVoltage();'
+    assert actual == desired
+
+
+def test_wrapper_response_lines_complex_type():
+    class MeasureCurrent(Exchange):
+        @dataclass
+        class Response:
+            current: float
+            timestamp: int
+
+        @dataclass
+        class Request:
+            pass
+
+    actual = wrapper_result_invocation(MeasureCurrent, STANDARD_MAPPING)
+    desired = 'MeasureCurrentResponse current = this->measureCurrent();'
+    assert actual == desired
+
+
+def test_wrapper_implementation():
+    actual = wrapper_implementation(exchange=MeasureVoltage, type_mapping=STANDARD_MAPPING)
+    desired = [
+        'void BaseCommunicationClient::measureVoltageWrapper() {',
+        '\tdouble voltage = this->measureVoltage();',
+        '\tSerial.print("MeasureVoltageResponse(");',
+        '\tSerial.print("voltage=");',
+        '\tSerial.print(voltage);',
+        '\tSerial.print(")");',
+        '\tSerial.print("\n");',
+        '}'
+    ]
+    assert actual == desired
+
+
+def test_check_message_invocations():
+    actual = check_message_invocations(exchanges=[MeasureVoltage])
+    desired = [
+        '\t\t} else if (fn.name == "MeasureVoltageRequest") {',
+        "\t\t\tthis->measureVoltageWrapper();"
+    ]
+    assert actual == desired
+
+
+def test_get_exchanges():
+    module = ModuleType('my_module')
+    module.MeasureVoltage = MeasureVoltage
+    desired = [MeasureVoltage]
+    actual = get_exchanges(module)
+    assert actual == desired

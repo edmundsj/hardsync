@@ -13,7 +13,7 @@ public:
     virtual ~BaseCommunicationClient();
 
     // Virtual method to measure voltage
-    virtual double measureVoltage() const = 0;
+    virtual double measureVoltage() const;
     virtual String identify() const;
 
     void begin();
