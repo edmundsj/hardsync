@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "hardsync"
+version = "0.1.0"
+description = "Hardware / software communication made easy"
+authors = ["Jordan Edmunds"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyserial = "^3.5"
+pyserial-asyncio = "^0.6"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
