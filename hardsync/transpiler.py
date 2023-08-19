@@ -3,34 +3,46 @@ This takes generic C++ code and converts it into the equivalent arduino-C code.
 This transpiler can probably afford to be fragile, at least in the beginning, as we
 have complete control over both the code being transpiled and the transpiler.
 
-TODO: Deal with whitespace matching, add tests
 TODO: Figure out when exactly to throw errors in transpilation.
 
 """
 from typing import Mapping, Dict
 import re
+import enum
 
 
-cpp_to_arduino = {
-    '#include <string>': '#include <WString.h>',
-    'std::string': 'String',
-    '.substr({{start}}, {{count}})': '.substring({{start}}, {{start}} + {{count}})',
-    '.find(': '.indexOf(',
+class Targets(enum.Enum):
+    ARDUINO = 'arduino'
+    CPP = 'cpp'
+
+
+TARGETS = {
+    Targets.ARDUINO: {
+        '#include <string>': '#include <WString.h>',
+        'std::string': 'String',
+        '.substr({{expr1}}, {{expr2}})': '.substring({{expr1}}, {{expr1}} + {{expr2}})',
+        '.substr({{expr}})': '.substring({{expr}})',
+        '.find(': '.indexOf(',
+    },
+    Targets.CPP: {},
 }
 
+EXPRESSION_REGEX = r'[\w\+\-\*/\(\) ]+'
+EXPRESSION_REGEX_LITERAL = EXPRESSION_REGEX.replace('\\', '\\\\')
 
 def template_to_regex(template: str):
-    pattern = r'{{(?P<name>\w+)}}'
+    pattern = r'{{(?P<name>' + EXPRESSION_REGEX + r')}}'
     matches = re.finditer(pattern=pattern, string=template)
     new_string = template
 
+    special_characters = ['(', ')', '[', ']']
     # Replace all regex special characters
     new_string = new_string.replace('(', r'\(')
     new_string = new_string.replace(')', r'\)')
 
     for match in matches:
         name = match.group('name')
-        new_regex = r'(?P<' + name + r'>\\S+)'
+        new_regex = r'(?P<' + name + r'>' + EXPRESSION_REGEX_LITERAL + r')'
         new_string = re.sub(pattern=pattern, repl=new_regex, string=new_string, count=1)
 
 

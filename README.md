@@ -98,24 +98,17 @@ We need to figure out how this will actually work. Putting communication initial
 ## Architecture
 This library is based on simple request/response-based communication. The software (client) sends a request to the device, and the device returns a response. 
 
-### Function Replacement
-std::string should be replaced with String
-string.substr() should be replaced with string.substring
-string.find() should be replaced with string.indexOf()
-- Ah, shit. The arduino String type actually defines substring differently. It's not just a different name, it uses 
-  the end index instead of the start index. So we aren't going to be able to build terribly re-usable code, then. 
-  The parser will have to be specific to a certain platform, rather than just a general C++ parser, that then gets 
-  transpiled into arduino code. If we don't write implementation-specific code, then we will need to write a 
-  transpiler that takes generic C++ and converts into arduino-C++. We would need to take input.substr(start, 
-  count) and replace it with input.substring(start, start + count). This itself actually doesn't sound so difficult. 
-  We can write a minimal transpiler that only handles this case. Writing the full-fledged transpiler is turning out 
-  to be a real pain in the ass.
+### Target transpilation
+Supported targets:
+- cpp (no transpilation)
+- arduino
 
 
 ## Future (non-MVP)
 - Support for streaming / listening
 - Support for sending requests from the device to the software
 - Support for overriding device implementation (see below)
+- Figure out how to check if generated code compiles.
 
 ### Overriding device implementation
 By default, the `Device` class uses utf-8 (text-based) communication. This can lead to unacceptably bloated back-and-forth communication. Embedded systems requiring high speed can change the implementation to use binary-based comunication instead:

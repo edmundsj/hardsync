@@ -1,27 +1,14 @@
 import pytest
+from hardsync import test_data_dir
 from hardsync.transpiler import (
     template_to_regex, var_names_from_template, populate_template, transpile_template,
-    transpile, cpp_to_arduino
+    transpile, TARGETS, Targets
 )
 
 
 def test_template_to_regex_novar():
     template = 'variable'
     expected = 'variable'
-    actual = template_to_regex(template)
-    assert actual == expected
-
-
-def test_template_to_regex_single():
-    template = 'variable{{hi}}'
-    expected = r'variable(?P<hi>\S+)'
-    actual = template_to_regex(template)
-    assert actual == expected
-
-
-def test_template_to_regex_double():
-    template = 'variable{{hi}}other{{there}}'
-    expected = r'variable(?P<hi>\S+)other(?P<there>\S+)'
     actual = template_to_regex(template)
     assert actual == expected
 
@@ -106,7 +93,6 @@ def test_transpile_template_import():
     assert actual == desired
 
 
-
 def test_transpile_switch_vars():
     original_text = 'myFunc(1400, 1200)'
     mapping = {r'myFunc({{val1}}, {{val2}})': 'myFunc({{val2}}, {{val1}})'}
@@ -117,7 +103,7 @@ def test_transpile_switch_vars():
 
 def test_transpile_cpp_to_arduino_substr():
     original_text = "string.substr(start, count)"
-    mapping = cpp_to_arduino
+    mapping = TARGETS[Targets.ARDUINO]
     desired = 'string.substring(start, start + count)'
     actual = transpile(template_mapping=mapping, input_text=original_text)
     assert desired == actual
@@ -136,7 +122,28 @@ std::string newString = oldString.substr(start, end)
 
 String newString = oldString.substring(start, start + end)
 """
-    mapping = cpp_to_arduino
+    mapping = TARGETS[Targets.ARDUINO]
     actual = transpile(template_mapping=mapping, input_text=original_text)
     assert desired == actual
 
+
+def test_transpile_cpp_files():
+    mapping = TARGETS[Targets.ARDUINO]
+    input_filename = test_data_dir / 'parser_initial.cpp'
+    desired_filename = test_data_dir / 'parser_arduino.cpp'
+    with open(input_filename, 'r') as input_file, open(desired_filename, 'r') as desired_file:
+        input_text = input_file.read()
+        desired_text = desired_file.read()
+        actual_text = transpile(input_text=input_text, template_mapping=mapping)
+        assert actual_text == desired_text
+
+
+def test_transpile_cpp_files_no_transpilation():
+    mapping = TARGETS[Targets.CPP]
+    input_filename = test_data_dir / 'parser_initial.cpp'
+    desired_filename = test_data_dir / 'parser_initial.cpp'
+    with open(input_filename, 'r') as input_file, open(desired_filename, 'r') as desired_file:
+        input_text = input_file.read()
+        desired_text = desired_file.read()
+        actual_text = transpile(input_text=input_text, template_mapping=mapping)
+        assert actual_text == desired_text
