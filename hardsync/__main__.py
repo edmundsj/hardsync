@@ -1,3 +1,5 @@
+import inspect
+
 import click
 import os
 from pathlib import Path
@@ -14,11 +16,20 @@ from hardsync.transpiler import (
     get_exchanges,
 )
 from hardsync import cpp_src_dir, root_dir
+from hardsync.dynamics import apply_defaults
+from hardsync.defaults import DEFAULT_GENERATED_DIR, DEFAULT_TARGET_PLATFORM
 import importlib
 import importlib.util
 
-DEFAULT_GENERATED_DIR = root_dir / 'generated'
-DEFAULT_TARGET_PLATFORM = Targets.ARDUINO
+from typing import Sequence
+
+
+
+def to_cpp_str(lines: Sequence[str]):
+    snippet = ''
+    for line in lines:
+        snippet += line + "\n"
+    return snippet
 
 
 def generate(contract: Path, target_platform: Targets, output_dir: Path):
@@ -29,23 +40,34 @@ def generate(contract: Path, target_platform: Targets, output_dir: Path):
     ]
     spec = importlib.util.spec_from_file_location('contract', contract)
     contract_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module=contract_module)
+    apply_defaults(contract_module)
+
     exchanges = get_exchanges(module=contract_module)
+    type_mapping = contract_module.TypeMapping
 
     for filename in files_to_augment:
         input_filename = cpp_src_dir / filename
         output_filename = output_dir / filename
         with open(input_filename, 'r') as input_file, open(output_filename, 'w') as output_file:
             replacements = {
-                'wrapper_declarations': wrapper_declarations(exchanges=exchanges, type_mapping=type_mapping),
-                'virtual_declarations': virtual_declarations(exchanges=exchanges, type_mapping=type_mapping),
                 'baud_rate': '9600',
-                'wrapper_implementations': wrapper_implementations(exchanges=exchanges, type_mapping=type_mapping),
-                'check_message_invocations': check_message_invocations(exchanges=exchanges),
+                'wrapper_declarations': to_cpp_str(
+                    wrapper_declarations(exchanges=exchanges, type_mapping=type_mapping)
+                ),
+                'virtual_declarations': to_cpp_str(
+                    virtual_declarations(exchanges=exchanges, type_mapping=type_mapping)
+                ),
+                'wrapper_implementations': to_cpp_str(
+                    wrapper_implementations(exchanges=exchanges, type_mapping=type_mapping)
+                ),
+                'check_message_invocations': to_cpp_str(check_message_invocations(exchanges=exchanges)),
             }
             template = input_file.read()
             verify_template(template=template, replacements=replacements)
             populated_template = populate_template(template=template, replacements=replacements)
-            output_file.write(populated_template)
+            transpiled_contents = transpile(input_text=populated_template, template_mapping=transpiler_mapping)
+            output_file.write(transpiled_contents)
 
     files_to_transpile = [
         'parser.h',

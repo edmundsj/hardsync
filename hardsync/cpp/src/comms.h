@@ -12,7 +12,7 @@ public:
 
     // Virtual destructor to ensure proper cleanup for derived classes
     virtual std::string identify() const;
-    std::string identifyWrapper() const;
+    void identifyWrapper() const;
     {{virtual_declarations}}
     {{wrapper_declarations}}
     virtual ~BaseCommunicationClient();

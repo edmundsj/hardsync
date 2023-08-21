@@ -46,6 +46,7 @@ TARGETS = {
 
 EXPRESSION_REGEX = r'[\w\+\-\*/\(\) ]+'
 EXPRESSION_REGEX_LITERAL = EXPRESSION_REGEX.replace('\\', '\\\\')
+SOFTTAB = "    "
 
 
 def template_to_regex(template: str):
@@ -159,8 +160,9 @@ def cpp_declaration(
 ):
     arg_type = [transform_type(t=t, type_mapping=type_mapping) for t in args.values()]
     arg_names = [name for name in args.keys()]
-    arg_pairs = itertools.chain.from_iterable(zip(arg_type, arg_names))
-    arg_string = ' '.join(arg_pairs)
+    arg_pairs = [t + ' ' + name for t, name in zip(arg_type, arg_names)]
+    arg_string = ', '.join(arg_pairs)
+    arg_string.removesuffix(', ')
     return_type = transform_type(t=return_type, type_mapping=type_mapping)
     preamble = ' '.join([prefix, return_type]).strip()
     if namespace:
@@ -201,14 +203,17 @@ def exchange_to_declaration(
 def virtual_declarations(exchanges: Sequence[Type[Exchange]], type_mapping: TypeMapping) -> List[str]:
     lines = []
     for ex in exchanges:
-        lines.append(exchange_to_declaration(exchange=ex, type_mapping=type_mapping, prefix='virtual', suffix='const'))
+        lines.append(
+            exchange_to_declaration(exchange=ex, type_mapping=type_mapping, prefix='virtual', suffix='const')
+        )
     return lines
 
 
 def wrapper_declarations(exchanges: Sequence[Type[Exchange]], type_mapping: TypeMapping) -> List[str]:
     lines = []
     for ex in exchanges:
-        lines.append(exchange_to_declaration(exchange=ex, type_mapping=type_mapping, prefix='', suffix='const'))
+        function_name = 'void ' + to_camel_case(ex.identifier()) + "Wrapper() const;"
+        lines.append(function_name)
     return lines
 
 
@@ -255,7 +260,7 @@ def wrapper_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) 
     end_exchange_line = f"Serial.print(\"{encoding.exchange_terminator}\");"
     core_lines.append(end_exchange_line)
 
-    lines = ['\t' + line for line in core_lines]
+    lines = [SOFTTAB + line for line in core_lines]
     lines.insert(0, line1)
     lines.append('}')
 
@@ -273,8 +278,8 @@ def wrapper_implementations(exchanges: Sequence[Type[Exchange]], type_mapping: T
 def check_message_invocations(exchanges: Sequence[Type[Exchange]]) -> List[str]:
     lines = []
     for exchange in exchanges:
-        line1 = '\t\t} else if (fn.name == \"' + exchange.identifier() + "Request\") {"
-        line2 = '\t\t\tthis->' + to_camel_case(exchange.identifier()) + "Wrapper();"
+        line1 = '} else if (fn.name == \"' + exchange.identifier() + "Request\") {"
+        line2 = SOFTTAB*3 + 'this->' + to_camel_case(exchange.identifier()) + "Wrapper();"
         lines.extend([line1, line2])
 
     return lines

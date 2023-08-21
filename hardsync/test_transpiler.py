@@ -6,7 +6,7 @@ from hardsync.transpiler import (
     template_to_regex, var_names_from_template, populate_template, transpile_template,
     transpile, TARGETS, Targets, verify_template, ReplacementsMissingVariableError, TemplateMissingVariableError,
     classes, ContractError, virtual_declarations, exchange_to_declaration, cpp_declaration, wrapper_declarations,
-    wrapper_result_invocation, wrapper_implementation, check_message_invocations, get_exchanges
+    wrapper_result_invocation, wrapper_implementation, check_message_invocations, get_exchanges, SOFTTAB
 )
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
@@ -245,6 +245,19 @@ def test_cpp_declaration():
     assert actual == desired
 
 
+def test_cpp_declaration_two_args():
+    actual = cpp_declaration(
+        return_type=float,
+        name='measureVoltage',
+        args={'channel': int, 'integration_time': float},
+        type_mapping=STANDARD_MAPPING,
+        prefix='virtual',
+        suffix='const'
+    )
+    desired = 'virtual double measureVoltage(int channel, double integration_time) const;'
+    assert actual == desired
+
+
 def test_cpp_declaration_namespace():
     actual = cpp_declaration(
         return_type=None,
@@ -285,13 +298,13 @@ def test_virtual_declarations_double():
 
 def test_wrapper_declarations_single():
     actual = wrapper_declarations([MeasureVoltage], type_mapping=STANDARD_MAPPING)
-    desired = ['double measureVoltage(int channel) const;']
+    desired = ['void measureVoltage(int channel) const;']
     assert actual == desired
 
 
 def test_wrapper_declarations_double():
     actual = wrapper_declarations([MeasureVoltage, MeasureVoltage], type_mapping=STANDARD_MAPPING)
-    desired = ['double measureVoltage(int channel) const;', 'double measureVoltage(int channel) const;']
+    desired = ['void measureVoltage(int channel) const;', 'void measureVoltage(int channel) const;']
     assert actual == desired
 
 
@@ -321,12 +334,12 @@ def test_wrapper_implementation():
     actual = wrapper_implementation(exchange=MeasureVoltage, type_mapping=STANDARD_MAPPING)
     desired = [
         'void BaseCommunicationClient::measureVoltageWrapper() {',
-        '\tdouble voltage = this->measureVoltage();',
-        '\tSerial.print("MeasureVoltageResponse(");',
-        '\tSerial.print("voltage=");',
-        '\tSerial.print(voltage);',
-        '\tSerial.print(")");',
-        '\tSerial.print("\n");',
+        SOFTTAB + 'double voltage = this->measureVoltage();',
+        SOFTTAB + 'Serial.print("MeasureVoltageResponse(");',
+        SOFTTAB + 'Serial.print("voltage=");',
+        SOFTTAB + 'Serial.print(voltage);',
+        SOFTTAB + 'Serial.print(")");',
+        SOFTTAB + 'Serial.print("\n");',
         '}'
     ]
     assert actual == desired
@@ -335,8 +348,8 @@ def test_wrapper_implementation():
 def test_check_message_invocations():
     actual = check_message_invocations(exchanges=[MeasureVoltage])
     desired = [
-        '\t\t} else if (fn.name == "MeasureVoltageRequest") {',
-        "\t\t\tthis->measureVoltageWrapper();"
+        SOFTTAB + SOFTTAB + '} else if (fn.name == "MeasureVoltageRequest") {',
+        SOFTTAB + SOFTTAB + SOFTTAB + "this->measureVoltageWrapper();"
     ]
     assert actual == desired
 
