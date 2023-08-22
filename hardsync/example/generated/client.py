@@ -16,13 +16,13 @@ from serial.tools import list_ports
 from dataclasses import is_dataclass
 from typing import TypeVar, Type
 from hardsync.example.contract import IdentifyRequest, MeasureVoltageRequest, IdentifyResponse, MeasureVoltageResponse
-from hardsync.device import BaseDevice
+from hardsync.device import BaseClient
 
 T = TypeVar('T')
 
 
 # This code should be auto-generated
-class Device(BaseDevice):
+class Client(BaseClient):
     def __init__(self, serial_number: str, baudrate: int):
         super().__init__(
             serial_number=serial_number,

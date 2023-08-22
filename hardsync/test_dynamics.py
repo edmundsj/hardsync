@@ -5,7 +5,6 @@ from hardsync.contracts import Exchange
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
 from dataclasses import is_dataclass, fields, field
-import abc
 
 
 def test_get_exchanges_permissive():

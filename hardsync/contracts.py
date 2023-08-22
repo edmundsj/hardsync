@@ -71,7 +71,7 @@ class Exchange(ABC):
     class Encoding(Encoding):
         @staticmethod
         @abstractmethod
-        def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], request: bool):
+        def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], is_request: bool):
             pass
 
         @staticmethod
