@@ -77,6 +77,16 @@ return voltage
 
 Now, running your `application.py` from earlier will have the python code communicate with the arduino, make it run the `measureVoltage()` code you specified, and communicate with the arduino to get the value returned from `measureVoltage()`.
 
+## Re-generating code
+If you need to change your contract frequently, to minimize the amount of manual steps involved in re-generating code, we recommend that you set up a project-specific hardsync configuration file. To create a basic file for your current directory, run:
+
+```
+hardsync config
+```
+This creates a `hardsync.ini` file in your current directory. Here you can specify the default directories that your generated client-side and device-side code will go to. Now, when running `hardsync` from the same directory or a subdirectory as your `hardsync.ini` file, the default settings in that file will be used.
+
+NOTE: By default, when using a `hardsync.ini` file, the main sketch for the device-side and client-side code is omitted by default, to avoid accidentally overriding it.
+
 
 ## Supported Targets
 All targets are support both on the client- and device- side. That being said, the `cpp`, and `arduino` targets are 
@@ -100,14 +110,15 @@ This library is based on simple request/response-based communication. The *clien
 - Add generated client-side code
 - Add "ping" default request/response to firmware + client code
 - Add "ping"-based auto-discovery of serial devices
-- Separate server and client implementations on both ends
-- Add Getting started flow for how to actually use it
 - Fix code generation so that it generates in the current directory, not the module directory.
 - Add example with how to override baud rate and device serial number
-- [DONE] Add "Channel" class to allow users to override baud rate, serial number
 - Publish package to PyPi
 - Set up CI for automatic testing and publishing to PyPi
 - Optionally have generated hardsync-side code reside in the hardsync library itself to avoid import / PYTHONPATH issues
+- Move generated arduino code into a separate user-defined `cpp` file. Maybe just put it in comms.cpp
+- Implement hardsync.ini file 
+- [DONE] Add Getting started flow for how to actually use it
+- [DONE] Add "Channel" class to allow users to override baud rate, serial number
 
 ## Future (non-MVP)
 - Heavy post-decorating contract validation to ensure that it meets all downstream requirements
