@@ -3,7 +3,9 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import Mapping, Protocol, Type
+from collections import namedtuple
+from typing import Mapping, Protocol, Type, Literal, Dict, NamedTuple
+from serial import Serial
 
 
 class FieldNotFoundError(Exception):
@@ -13,6 +15,14 @@ class FieldNotFoundError(Exception):
 class Stringable(Protocol):
     def __str__(self) -> str:
         pass
+
+
+ResponseValues = Dict[str, Stringable]
+
+
+class DecodedExchange(NamedTuple):
+    name: str
+    values: ResponseValues
 
 
 @dataclass
@@ -25,12 +35,12 @@ class Encoding(ABC):
 
     @staticmethod
     @abstractmethod
-    def encode(exchange: Type[Exchange], values: Mapping, request: bool) -> str | bytes:
+    def encode(exchange: Type[Exchange], values: Mapping, is_request: bool) -> str | bytes:
         pass
 
     @staticmethod
     @abstractmethod
-    def decode(exchange: Type[Exchange], contents: str | bytes) -> Mapping[str, Stringable | str]:
+    def decode(exchange: Type[Exchange], contents: str | bytes) -> Dict[str, Stringable | str]:
         pass
 
 
@@ -71,12 +81,12 @@ class Exchange(ABC):
     class Encoding(Encoding):
         @staticmethod
         @abstractmethod
-        def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], is_request: bool):
+        def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], is_request: bool) -> str | bytes:
             pass
 
         @staticmethod
         @abstractmethod
-        def decode(exchange: Type[Exchange], contents: str):
+        def decode(exchange: Type[Exchange], contents: str) -> DecodedExchange:
             pass
         # THEN: TEST C++ CODE GENERATION TO VERIFY IT COMPILES AND IS WORKING.
         # THEN: COMPLETE CLIENT-SIDE CODE GENERATION
@@ -95,3 +105,28 @@ class Exchange(ABC):
         pass
 
 
+
+BaudRate = Literal[
+    300, 1200, 2400, 4800, 9600, 19_200, 38_400, 57_600,
+    115_200, 230_400, 460_800, 921600, 1_000_000,
+    2_000_000
+]
+
+
+# TODO: Make this a wrapper around serial and other interfaces, and hide their underlying implementation.
+# Expose read_until() and write_bytes() as the only member functions, and probably make them class methods or
+# instance methods.
+@dataclass
+class Channel(ABC):
+    baud_rate: BaudRate
+    channel_identifier: str  # For example, device serial number
+
+    @abstractmethod
+    def open(self) -> Serial:
+        pass
+
+
+class Client(ABC):
+    @abstractmethod
+    def listen(self, channel: Channel):
+        pass

@@ -1,5 +1,5 @@
 from types import ModuleType
-from hardsync.contracts import Exchange
+from hardsync.interfaces import Exchange
 from hardsync.defaults import DEFAULT_TYPE_MAPPING
 from hardsync.encodings import AsciiEncoding
 from dataclasses import dataclass

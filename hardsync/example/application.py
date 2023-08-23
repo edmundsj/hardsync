@@ -1,4 +1,9 @@
-from generated.client import Device
+from generated.client import Client
 
-device = Device(serial_number='ADAOJNQ3t', baudrate=9600)
-device.identify()
+# Have the device read the voltage, and return the desired value
+client = Client()
+voltage = client.request_measure_voltage(channel=1, integration_time=0.5)
+
+# Listen for communication initiated from the device
+with client.listen():
+    client.respond()

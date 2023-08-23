@@ -67,6 +67,7 @@ the most important element of your contract.
 - Set up CI for automatic testing and publishing to PyPi
 
 ## Future (non-MVP)
+- Heavy post-decorating contract validation to ensure that it meets all downstream requirements
 - More tests to verify edge cases, especially around type conversion and multiple arguments
 - Support for streaming / listening
 - Add generated code testing and verification
@@ -91,6 +92,7 @@ the most important element of your contract.
 - Add a hash of the contract and the `hardsync` codebase in a comment in all generated code for complete traceability
 - Add verilog target
 - Add VHDL target
+- Add support for default values in contract, make these optional kwargs with defaults
 
 ## FAQ
 ### Why generated code, and not a universal device library?
@@ -121,3 +123,7 @@ In dealing with embedded systems for the last decade, I became acutely aware of 
 1. Programming languages are powerful, and python is perhaps the most powerful programming language in existence. Its dynamic programming capabilities make defining contracts in a python file fairly straightforward, and having a contract defined directly in a programming language allows for overriding and specifying functionality at a level that would simply not be possible in any text-based format.
 1. It has minimalist syntax similar to YAML. The language doesn't get in the way of the concepts being expressed.
 1. It is the most accessible language on the planet. Far fewer people know YAML than know python.
+
+
+### How does hardsync handle communication setup?
+Hardync, by default, assumes that your device can communicate over a serial interface. All devices running the hardsync firmware will respond to a `PingRequest()` with a `PingResponse()`, and so hardsync attepmts to open available serial devices until it finds one that responds with the expected response. Unless you override it, the baud rate is set to 9600. If you know your device's serial number, you can specify it in your contract to avoid hardsync attempting to open other serial ports.

@@ -1,7 +1,7 @@
 import pytest
 from hardsync import test_data_dir
 from dataclasses import dataclass
-from hardsync.contracts import TypeMapping, Exchange
+from hardsync.interfaces import TypeMapping, Exchange
 from hardsync.transpiler import (
     template_to_regex, var_names_from_template, populate_template, transpile_template,
     transpile, TARGETS, Targets, verify_template, ReplacementsMissingVariableError, TemplateMissingVariableError,

@@ -1,6 +1,6 @@
 class MeasureVoltage:
     class Request:
-        integration_time: int
+        integration_time: float
         channel: int
 
     class Response:

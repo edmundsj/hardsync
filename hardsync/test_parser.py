@@ -1,5 +1,5 @@
 from hardsync.encodings import AsciiEncoding
-from hardsync.contracts import Exchange
+from hardsync.interfaces import Exchange, DecodedExchange
 from dataclasses import dataclass, fields
 
 
@@ -12,6 +12,16 @@ class MeasureVoltage(Exchange):
     @dataclass
     class Response:
         voltage: float
+
+
+class Ping(Exchange):
+    @dataclass
+    class Request:
+        pass
+
+    @dataclass
+    class Response:
+        pass
 
 
 def test_arg_string():
@@ -31,21 +41,35 @@ def test_encode_args():
 def test_encode_full():
     values = {'arg1': 4, 'arg2': 'hello'}
     desired = 'MeasureVoltageRequest(arg1=4,arg2=hello)'
-    actual = AsciiEncoding.encode(exchange=MeasureVoltage, values=values, request=True)
+    actual = AsciiEncoding.encode(exchange=MeasureVoltage, values=values, is_request=True)
+    assert actual == desired
+
+
+def test_decode_name():
+    to_decode = 'MeasureVoltageRequest(channel=4,integration_time=0.5)'
+    desired = 'MeasureVoltageRequest'
+    actual = AsciiEncoding._decode_name(contents=to_decode)
     assert actual == desired
 
 
 def test_decode_args():
     to_decode = 'MeasureVoltageRequest(channel=4,integration_time=0.5)'
     desired = {'channel': 4, 'integration_time': 0.5}
-    actual = AsciiEncoding._decode_args(request_response=to_decode, exchange=MeasureVoltage)
+    actual = AsciiEncoding._decode_args(contents=to_decode, exchange=MeasureVoltage)
+    assert actual == desired
+
+
+def test_decode_args_none():
+    to_decode = 'PingRequest()'
+    desired = {}
+    actual = AsciiEncoding._decode_args(contents=to_decode, exchange=Ping)
     assert actual == desired
 
 
 def test_decode():
     to_decode = 'MeasureVoltageRequest(channel=4,integration_time=0.5)'
-    desired = {'channel': 4, 'integration_time': 0.5}
-    actual = AsciiEncoding.decode(request_response=to_decode, exchange=MeasureVoltage)
+    desired = DecodedExchange(name='MeasureVoltageRequest', values={'channel': 4, 'integration_time': 0.5})
+    actual = AsciiEncoding.decode(contents=to_decode, exchange=MeasureVoltage)
     assert actual == desired
 
 

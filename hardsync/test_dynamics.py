@@ -1,7 +1,7 @@
 import inspect
 
 from hardsync.dynamics import get_exchanges_permissive, transform_to_dataclasses, apply_defaults
-from hardsync.contracts import Exchange
+from hardsync.interfaces import Exchange
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
 from dataclasses import is_dataclass, fields, field

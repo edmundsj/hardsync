@@ -7,9 +7,8 @@ TODO: Figure out when exactly to throw errors in transpilation.
 
 """
 from dataclasses import fields, Field
-from hardsync.contracts import Exchange, TypeMapping
+from hardsync.interfaces import Exchange, TypeMapping
 import inspect
-import itertools
 from typing import Mapping, Dict, List, Sequence, Type
 from types import ModuleType
 import re

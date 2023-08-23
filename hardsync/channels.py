@@ -1,4 +1,4 @@
-from hardsync.channel import Channel, BaudRate
+from hardsync.interfaces import Channel, BaudRate
 from contextlib import contextmanager
 from serial import Serial
 from serial.tools import list_ports
@@ -10,7 +10,7 @@ class ChannelNotFoundError(Exception):
 
 class SerialChannel(Channel):
     def __init__(self, baud_rate: BaudRate, channel_identifier: str):
-        super().__init__(self, baud_rate=baud_rate, channel_identifier=channel_identifier)
+        super().__init__(baud_rate=baud_rate, channel_identifier=channel_identifier)
         self.port = self._find_port_by_serial(self.channel_identifier)
         if not self.port:
             raise Exception(f"Device with serial number {self.channel_identifier} not found")

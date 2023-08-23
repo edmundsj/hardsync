@@ -1,5 +1,5 @@
 from hardsync import root_dir
-from hardsync.contracts import TypeMapping
+from hardsync.interfaces import TypeMapping
 from hardsync.transpiler import Targets
 
 DEFAULT_GENERATED_DIR = root_dir / 'generated'

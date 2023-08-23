@@ -1,5 +1,5 @@
 from typing import Type, Mapping, Dict, Collection
-from hardsync.contracts import Encoding, Stringable, Exchange, FieldNotFoundError
+from hardsync.interfaces import Encoding, Stringable, Exchange, FieldNotFoundError, DecodedExchange, ResponseValues
 from dataclasses import Field, fields
 
 
@@ -11,9 +11,9 @@ class AsciiEncoding(Encoding):
     exchange_terminator = "\n"
 
     @staticmethod
-    def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], request=True):
+    def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], is_request=True):
         encoded_args = AsciiEncoding._encode_args(exchange=exchange, values=values)
-        if request:
+        if is_request:
             r = 'Request'
         else:
             r = 'Response'
@@ -21,9 +21,10 @@ class AsciiEncoding(Encoding):
         return encoded_function + '(' + encoded_args + ')'
 
     @staticmethod
-    def decode(exchange: Type[Exchange], request_response: str) -> Dict[str, Stringable | str]:
-        decoded_args = AsciiEncoding._decode_args(request_response=request_response, exchange=exchange)
-        return decoded_args
+    def decode(exchange: Type[Exchange], contents: str) -> DecodedExchange:
+        decoded_args = AsciiEncoding._decode_args(contents=contents, exchange=exchange)
+        decoded_name = AsciiEncoding._decode_name(contents=contents)
+        return DecodedExchange(name=decoded_name, values=decoded_args)
 
     @staticmethod
     def _encode_args(exchange: Type[Exchange], values: Mapping[str, Stringable | str]) -> str:
@@ -34,10 +35,10 @@ class AsciiEncoding(Encoding):
         return encoded_args
 
     @staticmethod
-    def _arg_string(request_response: str) -> str:
-        start = request_response.index('(')
-        stop = request_response.index(')')
-        return request_response[start+1:stop]
+    def _arg_string(contents: str) -> str:
+        start = contents.index(AsciiEncoding.argument_beginner)
+        stop = contents.index(AsciiEncoding.argument_ender)
+        return contents[start+1:stop]
 
     @staticmethod
     def _lookup_field_type(name: str, available_fields: Collection[Field]):
@@ -47,9 +48,9 @@ class AsciiEncoding(Encoding):
         raise FieldNotFoundError('Could not find field {name} in exchange')
 
     @staticmethod
-    def _decode_args(exchange: Type[Exchange], request_response: str, request=True) -> Dict[str, Stringable | str]:
-        inner_string = AsciiEncoding._arg_string(request_response=request_response)
-        args = inner_string.split(AsciiEncoding.argument_delimiter)
+    def _decode_args(exchange: Type[Exchange], contents: str, request=True) -> Dict[str, Stringable | str]:
+        inner_string = AsciiEncoding._arg_string(contents=contents)
+        args = inner_string.split(AsciiEncoding.argument_delimiter) if inner_string else []
         values = {}
         if request:
             decode_fields = fields(exchange.Request)
@@ -62,3 +63,9 @@ class AsciiEncoding(Encoding):
             values[key] = target_type(value)
 
         return values
+
+    @staticmethod
+    def _decode_name(contents: str) -> str:
+        end = contents.index(AsciiEncoding.argument_beginner)
+        return contents[:end]
+
