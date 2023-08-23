@@ -12,6 +12,10 @@ class FieldNotFoundError(Exception):
     pass
 
 
+class ReceivedErrorResponse(Exception):
+    pass
+
+
 class Stringable(Protocol):
     def __str__(self) -> str:
         pass
@@ -103,7 +107,6 @@ class Exchange(ABC):
     @dataclass
     class Response(ABC):
         pass
-
 
 
 BaudRate = Literal[

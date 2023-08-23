@@ -5,3 +5,6 @@ class MeasureVoltage:
 
     class Response:
         voltage: float
+
+
+# TODO: Add example for how to add a device-initiated exchange
