@@ -6,7 +6,7 @@ have complete control over both the code being transpiled and the transpiler.
 TODO: Figure out when exactly to throw errors in transpilation.
 
 """
-from dataclasses import fields, Field
+from dataclasses import fields
 from hardsync.interfaces import Exchange, TypeMapping
 import inspect
 from typing import Mapping, Dict, List, Sequence, Type
@@ -30,6 +30,7 @@ class ContractError(Exception):
 class Targets(enum.Enum):
     ARDUINO = 'arduino'
     CPP = 'cpp'
+
 
 
 TARGETS = {
@@ -284,9 +285,3 @@ def check_message_invocations(exchanges: Sequence[Type[Exchange]]) -> List[str]:
     return lines
 
 
-def get_exchanges(module: ModuleType):
-    exchanges = []
-    for item in inspect.getmembers(module, predicate=inspect.isclass):
-        if issubclass(item[1], Exchange):
-            exchanges.append(item[1])
-    return exchanges

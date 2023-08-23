@@ -13,16 +13,15 @@ from hardsync.transpiler import (
     wrapper_declarations,
     check_message_invocations,
     wrapper_implementations,
-    get_exchanges,
 )
+from hardsync.generators.python import generate as generate_python
 from hardsync import cpp_src_dir, root_dir
-from hardsync.dynamics import apply_defaults
+from hardsync.dynamics import apply_defaults, get_exchanges
 from hardsync.defaults import DEFAULT_GENERATED_DIR, DEFAULT_TARGET_PLATFORM
 import importlib
 import importlib.util
 
 from typing import Sequence
-
 
 
 def to_cpp_str(lines: Sequence[str]):
@@ -80,6 +79,11 @@ def generate(contract: Path, target_platform: Targets, output_dir: Path):
             contents = input_file.read()
             transpiled_contents = transpile(input_text=contents, template_mapping=transpiler_mapping)
             output_file.write(transpiled_contents)
+
+    python_client = generate_python(contract=contract_module)
+    python_output_file = output_dir / 'client.py'
+    with open(python_output_file, 'w') as client_file:
+        client_file.write(python_client)
 
 
 @click.command()

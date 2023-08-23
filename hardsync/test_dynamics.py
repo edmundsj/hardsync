@@ -1,10 +1,10 @@
 import inspect
 
-from hardsync.dynamics import get_exchanges_permissive, transform_to_dataclasses, apply_defaults
+from hardsync.dynamics import get_exchanges_permissive, transform_to_dataclasses, apply_defaults, get_exchanges
 from hardsync.interfaces import Exchange
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
-from dataclasses import is_dataclass, fields, field
+from dataclasses import is_dataclass, fields, field, dataclass
 
 
 def test_get_exchanges_permissive():
@@ -84,4 +84,22 @@ def test_apply_defaults_encoding():
     assert hasattr(module.ExchangeClass, 'Encoding')
     assert not inspect.isabstract(module.ExchangeClass.Encoding)
     assert issubclass(module.ExchangeClass.Encoding, AsciiEncoding)
+
+
+def test_get_exchanges():
+    class MeasureVoltage(Exchange):
+        @dataclass
+        class Request:
+            channel: int
+
+        @dataclass
+        class Response:
+            voltage: float
+
+    module = ModuleType('my_module')
+    module.MeasureVoltage = MeasureVoltage
+    desired = [MeasureVoltage]
+    actual = get_exchanges(module)
+    assert actual == desired
+
 

@@ -36,3 +36,11 @@ def transform_to_dataclasses(module: ModuleType):
         setattr(ex, 'Request', dataclass(ex.Request))
         setattr(ex, 'Response', dataclass(ex.Response))
 
+
+def get_exchanges(module: ModuleType):
+    exchanges = []
+    for item in inspect.getmembers(module, predicate=inspect.isclass):
+        if issubclass(item[1], Exchange):
+            exchanges.append(item[1])
+    return exchanges
+

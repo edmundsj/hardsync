@@ -6,7 +6,7 @@ from hardsync.transpiler import (
     template_to_regex, var_names_from_template, populate_template, transpile_template,
     transpile, TARGETS, Targets, verify_template, ReplacementsMissingVariableError, TemplateMissingVariableError,
     classes, ContractError, virtual_declarations, exchange_to_declaration, cpp_declaration, wrapper_declarations,
-    wrapper_result_invocation, wrapper_implementation, check_message_invocations, get_exchanges, SOFTTAB
+    wrapper_result_invocation, wrapper_implementation, check_message_invocations, SOFTTAB
 )
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
@@ -354,9 +354,3 @@ def test_check_message_invocations():
     assert actual == desired
 
 
-def test_get_exchanges():
-    module = ModuleType('my_module')
-    module.MeasureVoltage = MeasureVoltage
-    desired = [MeasureVoltage]
-    actual = get_exchanges(module)
-    assert actual == desired

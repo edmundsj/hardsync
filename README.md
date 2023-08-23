@@ -107,22 +107,24 @@ This library is based on simple request/response-based communication. The *clien
 
 ## Remaining (for MVP)
 - Fix bugs in generated device arduino code
-- Add generated client-side code
-- Add "ping" default request/response to firmware + client code
 - Add "ping"-based auto-discovery of serial devices
 - Fix code generation so that it generates in the current directory, not the module directory.
 - Add example with how to override baud rate and device serial number
-- Publish package to PyPi
-- Set up CI for automatic testing and publishing to PyPi
-- Optionally have generated hardsync-side code reside in the hardsync library itself to avoid import / PYTHONPATH issues
-- Move generated arduino code into a separate user-defined `cpp` file. Maybe just put it in comms.cpp
-- Implement hardsync.ini file 
+- [DONE] Publish package to PyPi
+- [DONE] Add generated client-side code
+- [DONE] Add "ping" default request/response to firmware + client code
 - [DONE] Add Getting started flow for how to actually use it
 - [DONE] Add "Channel" class to allow users to override baud rate, serial number
 
 ## Future (non-MVP)
+- Verify that generated client-side code is valid code
+- Add built-in typing for responses
+- Set up CI for automatic testing and publishing to PyPi
+- Optionally have generated hardsync-side code reside in the hardsync library itself to avoid import / PYTHONPATH issues
+- Implement hardsync.ini file 
 - Heavy post-decorating contract validation to ensure that it meets all downstream requirements
 - More tests to verify edge cases, especially around type conversion and multiple arguments
+- Multiple device channels
 - Support for streaming / listening
 - Add generated code testing and verification
 - Add example of how to add an additional target to the framework
