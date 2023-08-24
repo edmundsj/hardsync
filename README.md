@@ -68,11 +68,11 @@ public:
 ```
 This is where you put the code that actually measures the voltage. For example, if measuring from one of the arduino's analog pins, you might replace `//YOUR CODE GOES HERE` with:
 ```
-double DEVICE_VOLTAGE = 3.3
-double MAXIMUM_ANALOG_VALUE = 1024.0
+double DEVICE_VOLTAGE = 3.3;
+double MAXIMUM_ANALOG_VALUE = 1024.0;
 int analog_value = analogRead(A0);
-double voltage = DEVICE_VOLTAGE * analog_value / MAXIMUM_ANALOG_VALUE
-return voltage
+double voltage = DEVICE_VOLTAGE * analog_value / MAXIMUM_ANALOG_VALUE;
+return voltage;
 ```
 
 Now, running your `application.py` from earlier will have the python code communicate with the arduino, make it run the `measureVoltage()` code you specified, and communicate with the arduino to get the value returned from `measureVoltage()`.
@@ -117,6 +117,8 @@ This library is based on simple request/response-based communication. The *clien
 - [DONE] Add "Channel" class to allow users to override baud rate, serial number
 
 ## Future (non-MVP)
+- Add tests to verify that the command-line tool works as expected
+    - generated files are in the right place with the right names
 - Verify that generated client-side code is valid code
 - Add built-in typing for responses
 - Set up CI for automatic testing and publishing to PyPi
