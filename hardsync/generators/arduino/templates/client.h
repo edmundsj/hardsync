@@ -3,24 +3,25 @@
 
 #include "Arduino.h"
 #include "parser.h"
-#include <string>
+#include <WString.h>
 
-class BaseCommunicationClient {
+class Client {
 public:
     // Constructor
-    BaseCommunicationClient();
+    Client();
 
     // Virtual destructor to ensure proper cleanup for derived classes
-    virtual std::string identify() const;
-    void identifyWrapper() const;
+    virtual ~Client();
+
+    void pingWrapper() const;
+
     // {{virtual_declarations}}
     // {{wrapper_declarations}}
-    virtual ~BaseCommunicationClient();
 
     void begin();
     void unidentifiedCommand(String command_name);
     void badCommandFormat(String message);
-    void checkMessage();
+    void respond();
 };
 
 #endif
