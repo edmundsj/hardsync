@@ -151,6 +151,7 @@ This library is based on simple request/response-based communication. The *clien
 - Add verilog target
 - Add VHDL target
 - Add support for default values in contract, make these optional kwargs with defaults
+- [efficiency] Change the size of the C++ Arguments array to be specific to the number of arguments actually present.
 
 ## FAQ
 ### Why generated code, and not a universal device library?

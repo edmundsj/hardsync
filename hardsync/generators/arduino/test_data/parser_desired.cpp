@@ -60,4 +60,23 @@ ParsedFunction parseFunction(const String& input, Encoding* encoding) {
   return result;
 }
 
+int measureVoltageExtractChannel(ParsedFunction* parsed_function) {
+    for (int i = 0; i < MAX_ARGS; i++) {
+        argument = parsed_function->arguments[i]
+        if argument.name == "channel" {
+            return atoi(argument.value)
+        }
+    }
+    return -1
+}
+double measureVoltageExtractIntegrationTime(ParsedFunction* parsed_function) {
+    for (int i = 0; i < MAX_ARGS; i++) {
+        argument = parsed_function->arguments[i]
+        if argument.name == "integration_time" {
+            return atod(argument.value)
+        }
+    }
+    return -1
+}
+
 // {{extract_argument_implementations}}

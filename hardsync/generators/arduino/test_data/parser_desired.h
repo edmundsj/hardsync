@@ -31,4 +31,5 @@ struct ParsedFunction {
 ParsedFunction parseFunction(const std::string& input);
 std::string extractName(const std::string& input);
 std::string extractArgs(const std::string& input);
-// {{extract_argument_declarations}}
+int measureVoltageExtractChannel(ParsedFunction* parsed_function);
+double measureVoltageExtractIntegrationTime(ParsedFunction* parsed_function);
