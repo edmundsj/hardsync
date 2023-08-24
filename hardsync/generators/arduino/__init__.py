@@ -1,0 +1,1 @@
+from hardsync.generators.arduino.arduino import generate

@@ -2,7 +2,7 @@ import inspect
 from dataclasses import is_dataclass, fields
 from typing import Type, Mapping
 import os
-from hardsync.generators.common import convert_case, CaseType, populate_template
+from hardsync.generators.common import convert_case, CaseType, populate_template, Language
 from hardsync.dynamics import get_exchanges
 from pathlib import Path
 from types import ModuleType
@@ -112,5 +112,5 @@ def generate(contract: ModuleType):
 
     with open(template_filename, 'r') as template_file:
         template = template_file.read()
-        return populate_template(template=template, replacements=replacements)
+        return populate_template(template=template, replacements=replacements, language=Language.PYTHON)
 

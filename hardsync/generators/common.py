@@ -9,6 +9,11 @@ class CaseType(enum.Enum):
     PASCAL_CASE = "PascalCase"
     UNKNOWN = "UNKNOWN"
 
+class Language(enum.Enum):
+    ARDUINO = "arduino"
+    CPP = "cpp"
+    PYTHON = "python"
+
 
 def detect_case(s: str) -> CaseType:
     if re.match('^[a-z]+([A-Z][a-z0-9]+)+$', s):
@@ -35,10 +40,16 @@ def convert_case(s: str, to_case: CaseType) -> str:
         raise ValueError(f"Unsupported target case: {to_case}")
 
 
-def populate_template(template: str, replacements: Mapping[str, str]) -> str:
+def populate_template(template: str, replacements: Mapping[str, str], language: Language) -> str:
     populated_template = template
+    if language == Language.PYTHON:
+        comment_sequence = '#'
+    elif language == Language.CPP or language == Language.ARDUINO:
+        comment_sequence = '//'
+    else:
+        raise ValueError(f"Language {language} not supported.")
     for key, val in replacements.items():
-        var_to_match = '# {{' + key + '}}'
+        var_to_match = comment_sequence + ' {{' + key + '}}'
         populated_template = populated_template.replace(var_to_match, val)
 
     return populated_template
