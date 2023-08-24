@@ -92,7 +92,8 @@ def generate(contract: Path, target_platform: Targets, output_dir: Path):
 @click.option('--target-platform', default=DEFAULT_TARGET_PLATFORM, type=click.Choice(Targets))
 def main(contract: str, output_dir: str, target_platform: Targets):
     contract = Path(contract)
-    output_dir = Path(output_dir)
+    if not output_dir:
+        output_dir = Path(os.getcwd()) / 'generated'
     if not os.path.exists(contract):
         raise ValueError('Contract file path does not exist')
     if not os.path.exists(output_dir):

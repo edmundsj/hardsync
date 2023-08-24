@@ -108,8 +108,8 @@ This library is based on simple request/response-based communication. The *clien
 ## Remaining (for MVP)
 - Fix bugs in generated device arduino code
 - Add "ping"-based auto-discovery of serial devices
-- Fix code generation so that it generates in the current directory, not the module directory.
 - Add example with how to override baud rate and device serial number
+- [DONE] Fix code generation so that it generates in the current directory, not the module directory.
 - [DONE] Publish package to PyPi
 - [DONE] Add generated client-side code
 - [DONE] Add "ping" default request/response to firmware + client code
