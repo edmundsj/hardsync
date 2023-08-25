@@ -9,10 +9,25 @@ class CaseType(enum.Enum):
     PASCAL_CASE = "PascalCase"
     UNKNOWN = "UNKNOWN"
 
+
 class Language(enum.Enum):
     ARDUINO = "arduino"
     CPP = "cpp"
     PYTHON = "python"
+
+
+def indent(language: Language):
+    if language == language.ARDUINO or language == language.CPP:
+        return "    "
+    elif language == language.PYTHON:
+        return "    "
+    raise ValueError(f"Unspported language {language}")
+
+
+CPP_INDENT = indent(language=Language.CPP)
+ARDUINO_INDENT = indent(language=Language.ARDUINO)
+PYTHON_INDENT = indent(language=Language.PYTHON)
+
 
 
 def detect_case(s: str) -> CaseType:
