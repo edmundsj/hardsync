@@ -108,5 +108,20 @@ def populate_client_template_cpp(contract: ModuleType, type_mapping: TypeMapping
         return populated_template
 
 
+def populate_client_template_h(contract: ModuleType, type_mapping: TypeMapping):
+    file_path = TEMPLATE_DIR / 'client.h'
+    exchanges = get_exchanges(contract)
+    virtual_declarations = flatten([virtual_declaration(exchange=ex, type_mapping=type_mapping) for ex in exchanges])
+    wrapper_declarations = flatten([wrapper_declaration(exchange=ex, type_mapping=type_mapping) for ex in exchanges])
+    replacements = {
+        'virtual_declarations': virtual_declarations,
+        'wrapper_declarations': wrapper_declarations,
+    }
+    with open(file_path, 'r') as file:
+        template = file.read()
+        populated_template = populate_template(template=template, replacements=replacements, language=Language.CPP)
+        return populated_template
+
+
 def generate(contract: ModuleType):
     generate_client_template_cpp(contract=contract)

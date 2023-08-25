@@ -2,6 +2,7 @@ from types import ModuleType
 from hardsync.generators.arduino.arduino import (
     generate,
     populate_client_template_cpp,
+    populate_client_template_h,
     wrapper_implementation,
     respond_invocation,
     virtual_declaration,
@@ -75,6 +76,18 @@ def test_populate_client_template_cpp():
     desired_filepath = TEST_DATA_DIR / 'client.cpp'
 
     actual = populate_client_template_cpp(contract=module, type_mapping=DEFAULT_TYPE_MAPPING)
+    with open(desired_filepath, 'r') as desired_file:
+        desired = desired_file.read()
+
+        assert actual == desired
+
+
+def test_populate_client_template_h():
+    module = ModuleType('hi')
+    module.MeasureVoltage = MeasureVoltage
+    desired_filepath = TEST_DATA_DIR / 'client.h'
+
+    actual = populate_client_template_h(contract=module, type_mapping=DEFAULT_TYPE_MAPPING)
     with open(desired_filepath, 'r') as desired_file:
         desired = desired_file.read()
 

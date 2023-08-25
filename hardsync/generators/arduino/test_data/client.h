@@ -14,9 +14,9 @@ public:
     virtual ~Client();
 
     void pingWrapper() const;
+
     virtual double measureVoltage(int channel, double integration_time) const;
     void measureVoltageWrapper(int channel, double integration_time) const;
-
 
     void begin();
     void unidentifiedCommand(String command_name);
