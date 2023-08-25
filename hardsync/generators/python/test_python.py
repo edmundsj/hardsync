@@ -34,10 +34,6 @@ def test_generate_exchange_str():
     expected = """\
 class MeasureVoltage(Exchange):
     @dataclass
-    class Encoding(AsciiEncoding):
-        pass
-
-    @dataclass
     class Request:
         integration_time: float
         channel: int
@@ -82,7 +78,7 @@ def test_populate_template():
     module.MeasureVoltage = MeasureVoltage
 
     actual = generate(contract=module)
-    desired_filepath = Path(os.path.dirname(os.path.abspath(__file__))) / 'test_data' / 'desired_client.py'
+    desired_filepath = Path(os.path.dirname(os.path.abspath(__file__))) / 'test_data' / 'client.py'
     with open(desired_filepath, 'r') as desired_file:
         desired = desired_file.read()
         #desired = desired.replace('\n', '')

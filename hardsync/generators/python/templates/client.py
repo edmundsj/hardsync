@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from typing import TypeVar
-from hardsync.interfaces import Channel, Exchange, DecodedExchange
+from typing import TypeVar, Type
+from hardsync.interfaces import Channel, Exchange, DecodedExchange, Encoding
 from hardsync.clients import BaseClient
 from hardsync.channels import SerialChannel
 from hardsync.encodings import AsciiEncoding
@@ -26,6 +26,7 @@ class Ping(Exchange):
 @dataclass
 class Client(BaseClient):
     channel: Channel = SerialChannel(baud_rate=9600, channel_identifier='')
+    encoding: Type[Encoding] = AsciiEncoding
 
     def request_ping(self) -> DecodedExchange:
         return self.request({}, exchange=Ping)

@@ -96,7 +96,7 @@ def Request{cls.__name__}(self, {func_signature}) -> {return_type}:
 
 def generate(contract: ModuleType):
     dir_name = Path(os.path.dirname(os.path.abspath(__file__)))
-    template_filename = dir_name / 'client_template.py'
+    template_filename = dir_name / 'templates' / 'client.py'
     exchanges = get_exchanges(module=contract)
 
     exchange_strings = [exchange_definition(ex) for ex in exchanges]

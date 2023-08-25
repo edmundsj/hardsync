@@ -1,24 +1,42 @@
 from types import ModuleType
-from hardsync.interfaces import Exchange
-from hardsync.defaults import DEFAULT_TYPE_MAPPING
-from hardsync.encodings import AsciiEncoding
+from typing import Type
+from hardsync.interfaces import Exchange, Encoding, TypeMapping
+from hardsync.defaults import DEFAULT_TYPE_MAPPING, DEFAULT_ENCODING
 from dataclasses import dataclass
-import abc
 import inspect
 
 
 def apply_defaults(module: ModuleType):
-    if not hasattr(module, 'TypeMapping'):
-        module.TypeMapping = DEFAULT_TYPE_MAPPING
+    apply_encoding(module=module, encoding=DEFAULT_ENCODING)
+    apply_exchange_inheritance(module)
+    apply_type_mapping_inheritance(module=module, type_mapping=DEFAULT_TYPE_MAPPING)
 
+    transform_to_dataclasses(module)
+
+
+def apply_encoding(module: ModuleType, encoding: Type[Encoding]):
+    if hasattr(module, 'Encoding'):
+        if inspect.isabstract(module.Encoding):
+            module.Encoding = encoding
+    else:
+        module.Encoding = encoding
+
+
+def apply_exchange_inheritance(module: ModuleType):
     old_exchagnes = get_exchanges_permissive(module)
     for exchange in old_exchagnes:
         new_exchange = type(exchange.__name__, (Exchange,), dict(exchange.__dict__))
-        if inspect.isabstract(new_exchange.Encoding):
-            new_exchange.Encoding = AsciiEncoding
         setattr(module, exchange.__name__, new_exchange)
 
-    transform_to_dataclasses(module)
+
+# TODO: THIS IS A BUG. FIX
+def apply_type_mapping_inheritance(module: ModuleType, type_mapping: TypeMapping):
+    if not hasattr(module, 'TypeMapping'):
+        module.TypeMapping = type_mapping
+    else:
+        if not isinstance(module.TypeMapping, TypeMapping):
+            new_type_mapping = type('TypeMapping', (TypeMapping,), dict(module.TypeMapping.__class__.__dict__))
+            setattr(module, 'TypeMapping', new_type_mapping)
 
 
 def get_exchanges_permissive(module: ModuleType):

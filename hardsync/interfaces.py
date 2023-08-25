@@ -44,7 +44,7 @@ class Encoding(ABC):
 
     @staticmethod
     @abstractmethod
-    def decode(exchange: Type[Exchange], contents: str | bytes) -> Dict[str, Stringable | str]:
+    def decode(exchange: Type[Exchange], contents: str | bytes) -> DecodedExchange:
         pass
 
 
@@ -82,25 +82,6 @@ class Exchange(ABC):
         return cls.__name__
 
     @dataclass
-    class Encoding(Encoding):
-        @staticmethod
-        @abstractmethod
-        def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], is_request: bool) -> str | bytes:
-            pass
-
-        @staticmethod
-        @abstractmethod
-        def decode(exchange: Type[Exchange], contents: str) -> DecodedExchange:
-            pass
-        # THEN: TEST C++ CODE GENERATION TO VERIFY IT COMPILES AND IS WORKING.
-        # THEN: COMPLETE CLIENT-SIDE CODE GENERATION
-        # THEN: COMPLETE END-TO-END FLOW AND WRITE UP DOCS
-        # THEN YOU HAVE FINISHED THE MVP
-
-    class TypeMapping(TypeMapping):
-        pass
-
-    @dataclass
     class Request(ABC):
         pass
 
@@ -129,7 +110,11 @@ class Channel(ABC):
         pass
 
 
+@dataclass
 class Client(ABC):
+    channel: Channel
+    encoding: Type[Encoding]
+
     @abstractmethod
-    def listen(self, channel: Channel):
+    def listen(self):
         pass

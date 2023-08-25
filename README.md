@@ -109,6 +109,8 @@ This library is based on simple request/response-based communication. The *clien
 - Fix bugs in generated device arduino code
 - Add "ping"-based auto-discovery of serial devices
 - Add example with how to override baud rate and device serial number
+- Fix the type mapping defaults, add tests
+- [DONE] Move exchange to top-level of contract
 - [DONE] Fix code generation so that it generates in the current directory, not the module directory.
 - [DONE] Publish package to PyPi
 - [DONE] Add generated client-side code

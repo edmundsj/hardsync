@@ -80,10 +80,9 @@ def test_apply_defaults_encoding():
     module.ExchangeClass = ExchangeClass
     apply_defaults(module)
 
-    members = inspect.getmembers(module.ExchangeClass, predicate=inspect.isclass)
-    assert hasattr(module.ExchangeClass, 'Encoding')
-    assert not inspect.isabstract(module.ExchangeClass.Encoding)
-    assert issubclass(module.ExchangeClass.Encoding, AsciiEncoding)
+    assert hasattr(module, 'Encoding')
+    assert not inspect.isabstract(module.Encoding)
+    assert issubclass(module.Encoding, AsciiEncoding)
 
 
 def test_get_exchanges():

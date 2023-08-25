@@ -8,9 +8,6 @@ from dataclasses import dataclass
 
 
 class Ping(Exchange):
-    class Encoding(AsciiEncoding):
-        pass
-
     @dataclass
     class Request:
         pass
@@ -38,7 +35,7 @@ def test_ping_with_client():
     with (
         patch('hardsync.channels.SerialChannel._find_port_by_serial', return_value='COM3'),
     ):
-        client = BaseClient(channel=mock_channel)
+        client = BaseClient(channel=mock_channel, encoding=AsciiEncoding)
         response = client.request(request_values={}, exchange=Ping)
         assert response == DecodedExchange(name='PingResponse', values={})
 
@@ -61,6 +58,6 @@ def test_error_with_client():
     with (
         patch('hardsync.channels.SerialChannel._find_port_by_serial', return_value='COM3'),
     ):
-        client = BaseClient(channel=mock_channel)
+        client = BaseClient(channel=mock_channel, encoding=AsciiEncoding)
         with pytest.raises(ReceivedErrorResponse):
             response = client.request(request_values={}, exchange=Ping)
