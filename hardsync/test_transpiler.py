@@ -3,13 +3,19 @@ from hardsync import test_data_dir
 from dataclasses import dataclass
 from hardsync.interfaces import TypeMapping, Exchange
 from hardsync.transpiler import (
-    template_to_regex, var_names_from_template, populate_template, transpile_template,
-    transpile, TARGETS, Targets, verify_template, ReplacementsMissingVariableError, TemplateMissingVariableError,
-    classes, ContractError, virtual_declarations, exchange_to_declaration, cpp_declaration, wrapper_declarations,
-    wrapper_result_invocation, wrapper_implementation, check_message_invocations, SOFTTAB
+    template_to_regex,
+    var_names_from_template,
+    populate_template,
+    transpile_template,
+    transpile,
+    TARGETS,
+    Targets,
+    verify_template,
+    ReplacementsMissingVariableError,
+    classes,
+    ContractError
 )
 from hardsync.encodings import AsciiEncoding
-from types import ModuleType
 import types
 
 STANDARD_MAPPING: TypeMapping = TypeMapping({float: 'double', int: 'int', str: "std::string", None: 'void'})
@@ -230,127 +236,3 @@ def test_classes_bad_contract_no_request():
     good_contract.MeasureVoltage = MeasureVoltage
     with pytest.raises(ContractError):
         classes(contract=good_contract)
-
-
-def test_cpp_declaration():
-    actual = cpp_declaration(
-        return_type=float,
-        name='measureVoltage',
-        args={'channel': int},
-        type_mapping=STANDARD_MAPPING,
-        prefix='virtual',
-        suffix='const'
-    )
-    desired = 'virtual double measureVoltage(int channel) const;'
-    assert actual == desired
-
-
-def test_cpp_declaration_two_args():
-    actual = cpp_declaration(
-        return_type=float,
-        name='measureVoltage',
-        args={'channel': int, 'integration_time': float},
-        type_mapping=STANDARD_MAPPING,
-        prefix='virtual',
-        suffix='const'
-    )
-    desired = 'virtual double measureVoltage(int channel, double integration_time) const;'
-    assert actual == desired
-
-
-def test_cpp_declaration_namespace():
-    actual = cpp_declaration(
-        return_type=None,
-        name='measureVoltage',
-        args={'channel': int},
-        type_mapping=STANDARD_MAPPING,
-        prefix='virtual',
-        suffix='const',
-        namespace='BaseCommunicationClient',
-    )
-    desired = 'virtual void BaseCommunicationClient::measureVoltage(int channel) const;'
-    assert actual == desired
-
-
-
-def test_class_to_cpp_declaration():
-    actual = exchange_to_declaration(
-        exchange=MeasureVoltage,
-        type_mapping=STANDARD_MAPPING,
-        prefix='virtual',
-        suffix='const'
-    )
-    desired = 'virtual double measureVoltage(int channel) const;'
-    assert actual == desired
-
-
-def test_virtual_declarations_single():
-    actual = virtual_declarations([MeasureVoltage], type_mapping=STANDARD_MAPPING)
-    desired = ['virtual double measureVoltage(int channel) const;']
-    assert actual == desired
-
-
-def test_virtual_declarations_double():
-    actual = virtual_declarations([MeasureVoltage, MeasureVoltage], type_mapping=STANDARD_MAPPING)
-    desired = ['virtual double measureVoltage(int channel) const;', 'virtual double measureVoltage(int channel) const;']
-    assert actual == desired
-
-
-def test_wrapper_declarations_single():
-    actual = wrapper_declarations([MeasureVoltage], type_mapping=STANDARD_MAPPING)
-    desired = ['void measureVoltage(int channel) const;']
-    assert actual == desired
-
-
-def test_wrapper_declarations_double():
-    actual = wrapper_declarations([MeasureVoltage, MeasureVoltage], type_mapping=STANDARD_MAPPING)
-    desired = ['void measureVoltage(int channel) const;', 'void measureVoltage(int channel) const;']
-    assert actual == desired
-
-
-def test_wrapper_response_lines_single():
-    actual = wrapper_result_invocation(MeasureVoltage, STANDARD_MAPPING)
-    desired = 'double voltage = this->measureVoltage();'
-    assert actual == desired
-
-
-def test_wrapper_response_lines_complex_type():
-    class MeasureCurrent(Exchange):
-        @dataclass
-        class Response:
-            current: float
-            timestamp: int
-
-        @dataclass
-        class Request:
-            pass
-
-    actual = wrapper_result_invocation(MeasureCurrent, STANDARD_MAPPING)
-    desired = 'MeasureCurrentResponse current = this->measureCurrent();'
-    assert actual == desired
-
-
-def test_wrapper_implementation():
-    actual = wrapper_implementation(exchange=MeasureVoltage, type_mapping=STANDARD_MAPPING)
-    desired = [
-        'void BaseCommunicationClient::measureVoltageWrapper() {',
-        SOFTTAB + 'double voltage = this->measureVoltage();',
-        SOFTTAB + 'Serial.print("MeasureVoltageResponse(");',
-        SOFTTAB + 'Serial.print("voltage=");',
-        SOFTTAB + 'Serial.print(voltage);',
-        SOFTTAB + 'Serial.print(")");',
-        SOFTTAB + 'Serial.print("\n");',
-        '}'
-    ]
-    assert actual == desired
-
-
-def test_check_message_invocations():
-    actual = check_message_invocations(exchanges=[MeasureVoltage])
-    desired = [
-        SOFTTAB + SOFTTAB + '} else if (fn.name == "MeasureVoltageRequest") {',
-        SOFTTAB + SOFTTAB + SOFTTAB + "this->measureVoltageWrapper();"
-    ]
-    assert actual == desired
-
-

@@ -1,9 +1,10 @@
 from pathlib import Path
 import os
-from typing import Type
+from typing import Type, List
 from hardsync.interfaces import Exchange, TypeMapping
 from hardsync.generators.common import convert_case, CaseType, populate_template
-from hardsync.generators.common import Language, ARDUINO_INDENT
+from hardsync.generators.common import Language, ARDUINO_INDENT, CPP_INDENT, flatten
+from hardsync.dynamics import get_exchanges
 from dataclasses import fields
 from types import ModuleType
 
@@ -11,8 +12,8 @@ dir_name = Path(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = dir_name / 'templates'
 
 
-def virtual_declaration(exchange: Type[Exchange], type_mapping: TypeMapping):
-    class_name = exchange.identifier()
+def virtual_declaration(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
+    function_name = convert_case(exchange.identifier(), CaseType.CAMEL_CASE)
     cpp_code = "virtual "
 
     response_fields = fields(exchange.Response)
@@ -25,44 +26,45 @@ def virtual_declaration(exchange: Type[Exchange], type_mapping: TypeMapping):
     else:
         cpp_code += "void "
 
-    cpp_code += f"{class_name.lower()}("
+    cpp_code += f"{function_name}("
     cpp_code += ', '.join([f"{type_mapping[field.type]} {field.name}" for field in fields(exchange.Request)])
 
     cpp_code += ") const;"
-    return cpp_code
+    return [cpp_code]
 
 
-def wrapper_declaration(exchange: Type[Exchange], type_mapping: TypeMapping):
-    class_name = exchange.identifier()
+def wrapper_declaration(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
+    function_name = convert_case(exchange.identifier(), CaseType.CAMEL_CASE)
     cpp_code = "void "
 
-    cpp_code += f"{class_name.lower()}Wrapper("
+    cpp_code += f"{function_name}Wrapper("
     cpp_code += ', '.join([f"{type_mapping[field.type]} {field.name}" for field in fields(exchange.Request)])
 
     cpp_code += ") const;"
-    return cpp_code
+    return [cpp_code]
 
 
-def respond_invocation(exchange: Type[Exchange], type_mapping: TypeMapping):
+def respond_invocation(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
     class_name = exchange.identifier()
     function_name = convert_case(class_name, to_case=CaseType.CAMEL_CASE)
+    lines = []
 
-    cpp_code = f'}} else if (fn.name == "{class_name}Request") {{\n'
+    lines.append(f'}} else if (fn.name == "{class_name}Request") {{')
 
     for field in fields(exchange.Request):
 
-        cpp_code += (
+        lines.append(
             f'{ARDUINO_INDENT}{type_mapping[field.type]} {field.name} = extract'
-            f'{type_mapping[field.type].capitalize()}(&fn, "{field.name}");\n'
+            f'{type_mapping[field.type].capitalize()}(&fn, "{field.name}");'
         )
 
-    cpp_code += (f'{ARDUINO_INDENT}this->{function_name}Wrapper'
-                 f'({", ".join([field.name for field in fields(exchange.Request)])});\n')
+    lines.append(f'{ARDUINO_INDENT}this->{function_name}Wrapper'
+                 f'({", ".join([field.name for field in fields(exchange.Request)])});')
 
-    return cpp_code
+    return lines
 
 
-def wrapper_implementation(exchange: Type[Exchange], type_mapping: TypeMapping):
+def wrapper_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
     class_name = exchange.identifier()
     function_name = convert_case(class_name, CaseType.CAMEL_CASE)
     request_fields = ", ".join(
@@ -73,30 +75,32 @@ def wrapper_implementation(exchange: Type[Exchange], type_mapping: TypeMapping):
     )
 
     request_field_names = ", ".join([f"{field.name}" for field in fields(exchange.Request)])
+    lines = []
 
-    cpp_code = f"""void Client::{function_name}Wrapper({request_fields}) const {{
-    {response_fields} = this->{function_name}({request_field_names});
-    Serial.print("{class_name}Response");
-    Serial.print(ARGUMENT_BEGINNER);"""
+    lines.append(f'void Client::{function_name}Wrapper({request_fields}) const {{')
+    lines.append(f'{CPP_INDENT}{response_fields} = this->{function_name}({request_field_names});')
+    lines.append(f'{CPP_INDENT}Serial.print("{class_name}Response");')
+    lines.append(f'{CPP_INDENT}Serial.print(ARGUMENT_BEGINNER);')
 
     for field in fields(exchange.Response):
-        cpp_code += f"""
-    Serial.print("{field.name}");
-    Serial.print(ARGUMENT_ASSIGNER);
-    Serial.print({field.name});
-    Serial.print(ARGUMENT_ENDER);"""
+        lines.append(f'{CPP_INDENT}Serial.print("{field.name}");')
+        lines.append(f'{CPP_INDENT}Serial.print(ARGUMENT_ASSIGNER);')
+        lines.append(f'{CPP_INDENT}Serial.print({field.name});')
+        lines.append(f'{CPP_INDENT}Serial.print(ARGUMENT_ENDER);')
 
-    cpp_code += """
-    Serial.print(EXCHANGE_TERMINATOR);
-}"""
-    return cpp_code
+    lines.append(f'{CPP_INDENT}Serial.print(EXCHANGE_TERMINATOR);')
+    lines.append('}')
+    return lines
 
 
-def populate_client_template_cpp(contract: ModuleType):
+def populate_client_template_cpp(contract: ModuleType, type_mapping: TypeMapping):
     file_path = TEMPLATE_DIR / 'client.cpp'
+    exchanges = get_exchanges(contract)
+    wrapper_implementations = flatten([wrapper_implementation(ex, type_mapping=type_mapping) for ex in exchanges])
+    respond_invocations = flatten([respond_invocation(ex, type_mapping=type_mapping) for ex in exchanges])
     replacements = {
-        'wrapper_implementations': '',
-        'check_message_invocations': '',
+        'wrapper_implementations': wrapper_implementations,
+        'respond_invocations': respond_invocations,
     }
     with open(file_path, 'r') as file:
         template = file.read()

@@ -43,8 +43,7 @@ class Client(BaseClient):
 
     def request_measure_voltage(self, integration_time: float, channel: int) -> DecodedExchange:
         return self.request(
-            request_values={ 'integration_time': integration_time, 'channel': channel },
+            request_values={"integration_time": integration_time, "channel": channel},
             exchange=MeasureVoltage,
         )
-
 

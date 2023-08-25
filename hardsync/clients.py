@@ -22,10 +22,12 @@ class BaseClient(Client):
 
     def request(self, request_values: Mapping, exchange: Type[Exchange]) -> DecodedExchange:
         encoded_representation = self.encoding.encode(exchange=exchange, values=request_values, is_request=True)
+
         with self.channel.open() as ch:
             ch.write(data=encoded_representation)
             contents = ch.read_until(expected=self.encoding.exchange_terminator)
             decoded_contents = self.encoding.decode(exchange=exchange, contents=contents)
+
             if decoded_contents.name == 'ErrorResponse':
                 raise ReceivedErrorResponse(f'Received Error response. Full response contents {contents}')
             return decoded_contents

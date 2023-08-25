@@ -1,6 +1,7 @@
 import re
 import enum
-from typing import Mapping
+from typing import Mapping, Sequence, List, TypeVar
+import itertools
 
 
 class CaseType(enum.Enum):
@@ -14,6 +15,13 @@ class Language(enum.Enum):
     ARDUINO = "arduino"
     CPP = "cpp"
     PYTHON = "python"
+
+
+T = TypeVar('T')
+
+
+def flatten(nested_list: Sequence[Sequence[T]]) -> List[T]:
+    return list(itertools.chain.from_iterable(nested_list))
 
 
 def indent(language: Language):
@@ -55,7 +63,7 @@ def convert_case(s: str, to_case: CaseType) -> str:
         raise ValueError(f"Unsupported target case: {to_case}")
 
 
-def populate_template(template: str, replacements: Mapping[str, str], language: Language) -> str:
+def populate_template(template: str, replacements: Mapping[str, Sequence[str]], language: Language) -> str:
     populated_template = template
     if language == Language.PYTHON:
         comment_sequence = '#'
@@ -65,7 +73,21 @@ def populate_template(template: str, replacements: Mapping[str, str], language: 
         raise ValueError(f"Language {language} not supported.")
     for key, val in replacements.items():
         var_to_match = comment_sequence + ' {{' + key + '}}'
-        populated_template = populated_template.replace(var_to_match, val)
+        whitespace = starting_whitespace(input_string=template, match_string=var_to_match)
+        join_string = '\n' + whitespace
+        composite_string = join_string.join(val)
+
+        populated_template = populated_template.replace(var_to_match, composite_string)
 
     return populated_template
 
+
+def starting_whitespace(input_string: str, match_string: str) -> str:
+    lines = input_string.split('\n')
+    leading_spaces = 0
+    for line in lines:
+        if match_string in line:
+            leading_spaces = len(line) - len(line.lstrip())
+    whitespaces = ' ' * leading_spaces
+
+    return whitespaces

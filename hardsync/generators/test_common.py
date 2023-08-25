@@ -1,5 +1,5 @@
 import pytest
-from hardsync.generators.common import CaseType, detect_case, convert_case
+from hardsync.generators.common import CaseType, detect_case, convert_case, starting_whitespace, flatten
 
 
 @pytest.mark.parametrize(
@@ -25,3 +25,22 @@ def test_convert_case(string, to_case, desired):
     actual = convert_case(s=string, to_case=to_case)
     assert actual == desired
 
+
+@pytest.mark.parametrize(
+    'string,match,desired',(
+            ('   {{HelloThere}}', '{{HelloThere}}', '   '),
+            (' snake_case_really', 'snake_case_', ' '),
+            ('flargle', 'flarg', ''),
+            ('nomatch', 'DEFNOT', ''),
+    )
+)
+def test_starting_whitespace(string, match, desired):
+    actual = starting_whitespace(input_string=string, match_string=match)
+    assert actual == desired
+
+
+def test_flatten():
+    input_list = [['hi'], ['there']]
+    desired = ['hi', 'there']
+    actual = flatten(input_list)
+    assert actual == desired

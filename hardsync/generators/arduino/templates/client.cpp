@@ -21,7 +21,7 @@ void Client::pingWrapper() const {
     Serial.print(EXCHANGE_TERMINATOR);
 }
 
-// {{ wrapper_implementations }}
+// {{wrapper_implementations}}
 
 void Client::unidentifiedCommand(String command_name) {
     Serial.print("ErrorResponse(msg=Unidentified command: ");
