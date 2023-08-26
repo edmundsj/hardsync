@@ -1,13 +1,10 @@
 #include <WString.h>
 #include "parser.h"
 
-Encoding ascii_encoding = Encoding("(", ")", "=", ",", "\n");
-
-
 String extractName(const String& input) {
     String result;
     int start = 0;
-    int end = input.indexOf(ascii_encoding.argument_beginner);
+    int end = input.indexOf(ARGUMENT_BEGINNER);
     if (end == -1) {
         return result;
     }
@@ -16,8 +13,8 @@ String extractName(const String& input) {
 }
 
 String extractArgs(const String& input) {
-    int start = input.indexOf(ascii_encoding.argument_beginner);
-    int end = input.indexOf(ascii_encoding.argument_ender);
+    int start = input.indexOf(ARGUMENT_BEGINNER);
+    int end = input.indexOf(ARGUMENT_ENDER);
 
     String result;
     if (start == -1 || end == -1) {
@@ -40,8 +37,8 @@ ParsedFunction parseFunction(const String& input) {
     int argEnd;
     int eqPos;
     int length;
-    while ((eqPos = args.indexOf(ascii_encoding.argument_assigner, argStart)) != -1) {
-        argEnd = args.indexOf(ascii_encoding.argument_delimiter, argStart);
+    while ((eqPos = args.indexOf(ARGUMENT_ASSIGNER, argStart)) != -1) {
+        argEnd = args.indexOf(ARGUMENT_DELIMITER, argStart);
         if (argEnd == -1) {
             argEnd = args.length();
         }
@@ -51,7 +48,7 @@ ParsedFunction parseFunction(const String& input) {
         if (eqPos == -1) {
             return result;
         }
-        eqPos = arg.indexOf(ascii_encoding.argument_assigner);
+        eqPos = arg.indexOf(ARGUMENT_ASSIGNER);
         result.arguments[result.argCount].key = arg.substring(0, 0 + eqPos);
         result.arguments[result.argCount].value = arg.substring(eqPos + 1);
         result.argCount++;

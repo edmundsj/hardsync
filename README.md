@@ -107,7 +107,7 @@ This library is based on simple request/response-based communication. The *clien
 
 ## Remaining (for MVP)
 - Add "ping"-based auto-discovery of serial devices
-- Fix the type mapping defaults, add tests
+- Support for user-defined type mappings, clean syntax for this
 - Add tests for zero-length requests and responses, ensure void declarations are generated
 - [DONE] Fix bugs in generated device arduino code
 - [DONE] Move exchange to top-level of contract
@@ -118,28 +118,24 @@ This library is based on simple request/response-based communication. The *clien
 - [DONE] Add Getting started flow for how to actually use it
 - [DONE] Add "Channel" class to allow users to override baud rate, serial number
 
-## Future (non-MVP)
-- Add example with how to override baud rate and device serial number
-- Add tests to verify that the command-line tool works as expected
-    - generated files are in the right place with the right names
-- Verify that generated client-side code is valid code
-- Add built-in typing for responses
-- Set up CI for automatic testing and publishing to PyPi
-- Optionally have generated hardsync-side code reside in the hardsync library itself to avoid import / PYTHONPATH issues
-- Implement hardsync.ini file 
+## Future (in order of priority)
+- Support for device-initiate request/response pairs
+- Support for fixed-size arrays in requests and responses
+- Support for binary encoding
 - Heavy post-decorating contract validation to ensure that it meets all downstream requirements
+- Add example with how to override baud rate and device serial number
+- Variable-size arrays in requests and responses
+- Verify that generated client-side code is valid python
+- Set up CI for automatic testing and publishing to PyPi
+- Implement hardsync.ini file, static configuration
+- Support for multi-hardsync device discovery on same machine
 - More tests to verify edge cases, especially around type conversion and multiple arguments
 - Multiple device channels
-- Support for streaming / listening
-- Add generated code testing and verification
+- Add generated code testing in sandbox environment to verify it works
 - Add example of how to add an additional target to the framework
-- Support for sending requests from the device to the software
 - Support for overriding device implementation (see below)
-- Figure out how to check if generated code compiles.
 - "time" types
 - Support for multiple response fields
-- Variable-size arrays in requests and responses
-- Fixed-size arrays in requests and responses
 - Casting of non-string request types when received by device
 - Support specifying the output directories with a config file in a project
 - Add @asciiencoding, @utf8encoding, and @binaryencoding decorators
@@ -148,12 +144,13 @@ This library is based on simple request/response-based communication. The *clien
 - Add @retryable decorator and implementation to Exchange class
 - Add retries on non-error response.
 - Add optional timeouts
-- Support for binary encoding
 - Client-side async support
 - Add a hash of the contract and the `hardsync` codebase in a comment in all generated code for complete traceability
 - Add verilog target
 - Add VHDL target
 - Add support for default values in contract, make these optional kwargs with defaults
+- [DONE] Verify as part of testing that generated arduino code compiles
+- [DONE] Add tests to verify that the command-line tool works as expected
 - [efficiency] Change the size of the C++ Arguments array to be specific to the number of arguments actually present.
 
 ## FAQ

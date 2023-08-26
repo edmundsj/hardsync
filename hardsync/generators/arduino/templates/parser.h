@@ -2,23 +2,11 @@
 #ifndef ENCODING_H
 #define ENCODING_H
 
-class Encoding {
-public:
-    const String argument_beginner;
-    const String argument_ender;
-    const String argument_assigner;
-    const String argument_delimiter;
-    const String exchange_ender;
-
-    Encoding(
-        String argument_beginner,
-        String argument_ender,
-        String argument_assigner,
-        String argument_delimiter,
-        String exchange_ender
-    ): argument_beginner(argument_beginner), argument_ender(argument_ender), argument_assigner(argument_assigner),
-    argument_delimiter(argument_delimiter), exchange_ender(exchange_ender) {}
-};
+#define ARGUMENT_BEGINNER "("
+#define ARGUMENT_ENDER ")"
+#define ARGUMENT_DELIMITER ","
+#define ARGUMENT_ASSIGNER ","
+#define EXCHANGE_TERMINATOR "\n"
 
 struct Argument {
     String key;
