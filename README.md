@@ -1,6 +1,4 @@
 # Hardsync
-## Disclaimer
-This software is currently under development, and is not yet in a working state. See below in the "Remaining for MVP" section to see what remains to be done. I expect it to be in a working state by 08/27/23 and complete the week after that. If you are feeling the pain so much that you want to use it right now, realize there will likely be bugs you will encounter and need to fix (and when you do, please submit an Issue on this repository)
 
 ## What problem is this solving?
 Traditionally, when developing embedded applications, the software and firmware are developed separately. Often, the most time-consuming piece of the entire process is deciding on and implementing a communication protocol between the software and embedded device.
@@ -45,16 +43,7 @@ By default, the generated code will be placed in a folder called `generated` ins
 python -m hardsync path/to/your/contract.py --generated-dir path/to/your/directory
 ```
 
-To create a program that interacts with the device, import the generated code:
-```
-from generated.client import Client
-client = Client()
-
-response = client.request_voltage(channel=1, integration_time=0.5)
-voltage = response.values['voltage']
-
-```
-On the device-side, you now need to upload the generated firmware to your device. This is located in a `device` folder inside your `generated` directory. How you incorporate and upload this code will depend on your target. 
+On the device-side, you now need to upload the generated firmware to your device. This is located in a `firmware` folder inside your `generated` directory. How you incorporate and upload this code will depend on your target. 
 
 ### Arduino
 The generated `device` folder contains a full sketch that can simply be uploaded to the device. In the main `sketch.ino` file, you will see something near the top of the file like this:
@@ -75,7 +64,18 @@ double voltage = DEVICE_VOLTAGE * analog_value / MAXIMUM_ANALOG_VALUE;
 return voltage;
 ```
 
-Now, running your `application.py` from earlier will have the python code communicate with the arduino, make it run the `measureVoltage()` code you specified, and communicate with the arduino to get the value returned from `measureVoltage()`.
+To create a program that interacts with the device, import the generated code:
+```
+from generated.client import Client
+client = Client()
+
+response = client.request_voltage(channel=1, integration_time=0.5)
+voltage = response.values['voltage']
+print(voltage)
+```
+
+
+Now, running this program will have the python code communicate with the arduino, make it run the `measureVoltage()` code you specified, and communicate with the arduino to get the value returned from `measureVoltage(), and print that to the screen.`.
 
 ## Re-generating code
 If you need to change your contract frequently, to minimize the amount of manual steps involved in re-generating code, we recommend that you set up a project-specific hardsync configuration file. To create a basic file for your current directory, run:
@@ -89,9 +89,7 @@ NOTE: By default, when using a `hardsync.ini` file, the main sketch for the devi
 
 
 ## Supported Targets
-All targets are support both on the client- and device- side. That being said, the `cpp`, and `arduino` targets are 
-intended to be used on the device-side, and the `python` target is intended to be used on the client side.
-- `cpp`
+All targets are support both on the client- and device- side. That being said, the `arduino` target are intended to be used on the device-side, and the `python` target is intended to be used on the host side.
 - `arduino`
 - `python`
 
@@ -103,6 +101,9 @@ intended to be used on the device-side, and the `python` target is intended to b
 
 ## Architecture
 This library is based on simple request/response-based communication. The *client* - this can be the device OR your computer, sends a *request* to the *server* (which can be either your PC or your device), and the server returns a *response*. This request-response communication is referred to as an *exchange*, and it is the *exchanges* that are the most important element of your contract.
+
+## Feature Request
+This library is under active development. If you have a feature request (or want to change the priority of the features below), submit an issue on this repository.
 
 
 ## Remaining (for MVP)
@@ -119,10 +120,14 @@ This library is based on simple request/response-based communication. The *clien
 - [DONE] Add "Channel" class to allow users to override baud rate, serial number
 
 ## Future (in order of priority)
+- Add INFO logging for generated files being written
+- Add INFO logging for sent requests / received responses
+- Replace exceptions with ERROR logging on receiving a ErrorResponse
 - Support for device-initiate request/response pairs
 - Support for fixed-size arrays in requests and responses
 - Support for binary encoding
 - Heavy post-decorating contract validation to ensure that it meets all downstream requirements
+- Add channel.write wrapper around Serial.print statements to reduce program memory, Serial library flexibility
 - Add example with how to override baud rate and device serial number
 - Variable-size arrays in requests and responses
 - Verify that generated client-side code is valid python
