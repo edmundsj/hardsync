@@ -1,5 +1,7 @@
 import pytest
-from hardsync.generators.common import CaseType, detect_case, convert_case, starting_whitespace, flatten
+import os
+from hardsync.generators.common import CaseType, detect_case, convert_case, starting_whitespace, flatten, write
+from hardsync.types import PopulatedFile
 
 
 @pytest.mark.parametrize(
@@ -44,3 +46,14 @@ def test_flatten():
     desired = ['hi', 'there']
     actual = flatten(input_list)
     assert actual == desired
+
+
+def test_write(tmp_path):
+    desired = 'hello'
+    file = PopulatedFile(filename='test_file.cpp', content=desired)
+    full_path = tmp_path / file.filename
+    write(file=file, dirname=tmp_path)
+    assert os.path.exists(full_path)
+    with open(full_path, 'r') as read_file:
+        actual = read_file.read()
+        assert actual == desired

@@ -78,11 +78,14 @@ def test_generate_request_for_current_reading():
 def test_populate_template():
     module = ModuleType('hi')
     module.MeasureVoltage = MeasureVoltage
+    desired_filename = 'client.py'
 
-    actual = generate(contract=module)
-    desired_filepath = Path(os.path.dirname(os.path.abspath(__file__))) / 'test_data' / 'client.py'
+    files = generate(contract=module)
+    assert len(files) == 1
+
+    desired_filepath = Path(os.path.dirname(os.path.abspath(__file__))) / 'test_data' / desired_filename
     with open(desired_filepath, 'r') as desired_file:
-        desired = desired_file.read()
-
-        assert actual == desired
+        desired_content = desired_file.read()
+        assert desired_filename == files[0].filename
+        assert desired_content == files[0].content
 

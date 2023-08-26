@@ -1,6 +1,7 @@
 from dataclasses import is_dataclass, dataclass
 from typing import TypeVar, Type, Mapping, Dict, Any
-from hardsync.interfaces import Channel, Exchange, DecodedExchange, ReceivedErrorResponse, Encoding, Client
+from hardsync.interfaces import Channel, Exchange, Encoding, Client
+from hardsync.types import ReceivedErrorResponse, DecodedExchange
 from contextlib import contextmanager
 
 T = TypeVar('T')

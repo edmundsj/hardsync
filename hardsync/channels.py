@@ -1,4 +1,5 @@
-from hardsync.interfaces import Channel, BaudRate
+from hardsync.interfaces import Channel
+from hardsync.types import BaudRate
 from contextlib import contextmanager
 from serial import Serial
 from serial.tools import list_ports

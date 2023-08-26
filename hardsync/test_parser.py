@@ -1,5 +1,6 @@
 from hardsync.encodings import AsciiEncoding
-from hardsync.interfaces import Exchange, DecodedExchange
+from hardsync.interfaces import Exchange
+from hardsync.types import DecodedExchange
 from dataclasses import dataclass, fields
 
 

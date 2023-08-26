@@ -3,30 +3,10 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from collections import namedtuple
-from typing import Mapping, Protocol, Type, Literal, Dict, NamedTuple
+from typing import Mapping, Type
 from serial import Serial
 
-
-class FieldNotFoundError(Exception):
-    pass
-
-
-class ReceivedErrorResponse(Exception):
-    pass
-
-
-class Stringable(Protocol):
-    def __str__(self) -> str:
-        pass
-
-
-ResponseValues = Dict[str, Stringable]
-
-
-class DecodedExchange(NamedTuple):
-    name: str
-    values: ResponseValues
+from hardsync.types import DecodedExchange, BaudRate
 
 
 @dataclass
@@ -88,13 +68,6 @@ class Exchange(ABC):
     @dataclass
     class Response(ABC):
         pass
-
-
-BaudRate = Literal[
-    300, 1200, 2400, 4800, 9600, 19_200, 38_400, 57_600,
-    115_200, 230_400, 460_800, 921600, 1_000_000,
-    2_000_000
-]
 
 
 # TODO: Make this a wrapper around serial and other interfaces, and hide their underlying implementation.

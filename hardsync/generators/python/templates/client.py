@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import TypeVar, Type
-from hardsync.interfaces import Channel, Exchange, DecodedExchange, Encoding
+from hardsync.interfaces import Channel, Exchange, Encoding
+from hardsync.types import DecodedExchange
 from hardsync.clients import BaseClient
 from hardsync.channels import SerialChannel
 from hardsync.encodings import AsciiEncoding

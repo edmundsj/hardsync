@@ -5,6 +5,7 @@ from typing import Type, Sequence, List, Any, TypeVar
 import os
 from hardsync.generators.common import convert_case, CaseType, populate_template, Language, PYTHON_INDENT, flatten
 from hardsync.dynamics import get_exchanges
+from hardsync.types import PopulatedFile
 from pathlib import Path
 from types import ModuleType
 
@@ -62,10 +63,7 @@ def request_function(cls: Type) -> List[str]:
     return lines
 
 
-
-
-
-def generate(contract: ModuleType):
+def generate(contract: ModuleType) -> List[PopulatedFile]:
     dir_name = Path(os.path.dirname(os.path.abspath(__file__)))
     template_filename = dir_name / 'templates' / 'client.py'
     exchanges = get_exchanges(module=contract)
@@ -81,5 +79,8 @@ def generate(contract: ModuleType):
 
     with open(template_filename, 'r') as template_file:
         template = template_file.read()
-        return populate_template(template=template, replacements=replacements, language=Language.PYTHON)
+        contents = populate_template(template=template, replacements=replacements, language=Language.PYTHON)
+        file = PopulatedFile(filename='client.py', content=contents)
+        return [file]
+
 

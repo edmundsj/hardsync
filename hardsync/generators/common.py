@@ -1,7 +1,9 @@
 import re
 import enum
 from typing import Mapping, Sequence, List, TypeVar
+from pathlib import Path
 import itertools
+from hardsync.types import PopulatedFile
 
 
 class CaseType(enum.Enum):
@@ -91,3 +93,9 @@ def starting_whitespace(input_string: str, match_string: str) -> str:
     whitespaces = ' ' * leading_spaces
 
     return whitespaces
+
+
+def write(dirname: Path, file: PopulatedFile):
+    full_path = dirname / file.filename
+    with open(full_path, 'w') as file_to_write:
+        file_to_write.write(file.content)

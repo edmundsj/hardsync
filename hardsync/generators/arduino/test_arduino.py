@@ -1,6 +1,7 @@
 from types import ModuleType
 from hardsync.generators.arduino.arduino import (
     generate,
+    core_implementation,
     populate_client_template_cpp,
     populate_client_template_h,
     wrapper_implementation,
@@ -67,6 +68,16 @@ def test_virtual_declaration():
 def test_wrapper_declaration():
     actual = wrapper_declaration(exchange=MeasureVoltage, type_mapping=DEFAULT_TYPE_MAPPING)
     desired = ["void measureVoltageWrapper(int channel, double integration_time) const;"]
+    assert actual == desired
+
+
+def test_core_implementation_declaration():
+    actual = core_implementation(exchange=MeasureVoltage, type_mapping=DEFAULT_TYPE_MAPPING)
+    desired = [
+        "double measureVoltage(int channel, double integration_time) const {",
+        CPP_INDENT + '// YOUR CODE GOES HERE',
+        '}',
+    ]
     assert actual == desired
 
 

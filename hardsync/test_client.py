@@ -1,5 +1,6 @@
 import pytest
-from hardsync.interfaces import Exchange, DecodedExchange, ReceivedErrorResponse
+from hardsync.interfaces import Exchange
+from hardsync.types import ReceivedErrorResponse, DecodedExchange
 from unittest.mock import Mock, patch
 from hardsync.clients import BaseClient
 from hardsync.channels import SerialChannel

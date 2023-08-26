@@ -106,11 +106,10 @@ This library is based on simple request/response-based communication. The *clien
 
 
 ## Remaining (for MVP)
-- Fix bugs in generated device arduino code
 - Add "ping"-based auto-discovery of serial devices
-- Add example with how to override baud rate and device serial number
 - Fix the type mapping defaults, add tests
 - Add tests for zero-length requests and responses, ensure void declarations are generated
+- [DONE] Fix bugs in generated device arduino code
 - [DONE] Move exchange to top-level of contract
 - [DONE] Fix code generation so that it generates in the current directory, not the module directory.
 - [DONE] Publish package to PyPi
@@ -120,6 +119,7 @@ This library is based on simple request/response-based communication. The *clien
 - [DONE] Add "Channel" class to allow users to override baud rate, serial number
 
 ## Future (non-MVP)
+- Add example with how to override baud rate and device serial number
 - Add tests to verify that the command-line tool works as expected
     - generated files are in the right place with the right names
 - Verify that generated client-side code is valid code

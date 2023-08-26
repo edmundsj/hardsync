@@ -1,7 +1,9 @@
 from pathlib import Path
 import os
+import inspect
 from typing import Type, List
 from hardsync.interfaces import Exchange, TypeMapping
+from hardsync.types import PopulatedFile
 from hardsync.generators.common import convert_case, CaseType, populate_template
 from hardsync.generators.common import Language, ARDUINO_INDENT, CPP_INDENT, flatten
 from hardsync.dynamics import get_exchanges
@@ -42,6 +44,24 @@ def wrapper_declaration(exchange: Type[Exchange], type_mapping: TypeMapping) -> 
 
     cpp_code += ") const;"
     return [cpp_code]
+
+
+def core_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
+    function_name = convert_case(exchange.identifier(), CaseType.CAMEL_CASE)
+    lines = []
+    if len(fields(exchange.Response)) != 1:
+        raise ValueError("TO BE IMPLEMENTED: Response that supports more than one value")
+    function_type = fields(exchange.Response)[0].type
+    # TODO: HACK. THIS HAS TO BE MODIFIED FOR MULTIPLE RESPONSE TYPES
+
+    line1 = f"{type_mapping[function_type]} {function_name}("
+    line1 += ', '.join([f"{type_mapping[field.type]} {field.name}" for field in fields(exchange.Request)])
+    line1 += ") const {"
+    lines.append(line1)
+    lines.append(CPP_INDENT + '// YOUR CODE GOES HERE')
+    lines.append("}")
+
+    return lines
 
 
 def respond_invocation(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
@@ -93,7 +113,7 @@ def wrapper_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) 
     return lines
 
 
-def populate_client_template_cpp(contract: ModuleType, type_mapping: TypeMapping):
+def populate_client_template_cpp(contract: ModuleType, type_mapping: TypeMapping) -> str:
     file_path = TEMPLATE_DIR / 'client.cpp'
     exchanges = get_exchanges(contract)
     wrapper_implementations = flatten([wrapper_implementation(ex, type_mapping=type_mapping) for ex in exchanges])
@@ -108,7 +128,7 @@ def populate_client_template_cpp(contract: ModuleType, type_mapping: TypeMapping
         return populated_template
 
 
-def populate_client_template_h(contract: ModuleType, type_mapping: TypeMapping):
+def populate_client_template_h(contract: ModuleType, type_mapping: TypeMapping) -> str:
     file_path = TEMPLATE_DIR / 'client.h'
     exchanges = get_exchanges(contract)
     virtual_declarations = flatten([virtual_declaration(exchange=ex, type_mapping=type_mapping) for ex in exchanges])
@@ -123,5 +143,45 @@ def populate_client_template_h(contract: ModuleType, type_mapping: TypeMapping):
         return populated_template
 
 
-def generate(contract: ModuleType):
-    generate_client_template_cpp(contract=contract)
+def populate_parser_template_h(contract: ModuleType, type_mapping: TypeMapping) -> str:
+    file_path = TEMPLATE_DIR / 'parser.h'
+    with open(file_path) as file:
+        contents = file.read()
+        return contents
+
+
+def populate_parser_template_cpp(contract: ModuleType, type_mapping: TypeMapping) -> str:
+    file_path = TEMPLATE_DIR / 'parser.cpp'
+    with open(file_path) as file:
+        contents = file.read()
+        return contents
+
+
+def populate_firmware_ino(contract: ModuleType, type_mapping: TypeMapping) -> str:
+    file_path = TEMPLATE_DIR / 'firmware.ino'
+    exchanges = get_exchanges(contract)
+    core_implementations = flatten([core_implementation(exchange=ex, type_mapping=type_mapping) for ex in exchanges])
+    replacements = {
+        'core_implementations': core_implementations,
+    }
+    with open(file_path) as file:
+        template = file.read()
+        populated_template = populate_template(template=template, replacements=replacements, language=Language.CPP)
+        return populated_template
+
+
+def generate(contract: ModuleType, type_mapping: TypeMapping) -> List[PopulatedFile]:
+    client_h = populate_client_template_h(contract=contract, type_mapping=type_mapping)
+    client_cpp = populate_client_template_cpp(contract=contract, type_mapping=type_mapping)
+    parser_h = populate_parser_template_h(contract=contract, type_mapping=type_mapping)
+    parser_cpp = populate_parser_template_cpp(contract=contract, type_mapping=type_mapping)
+    firmware_ino = populate_firmware_ino(contract=contract, type_mapping=type_mapping)
+    files = [
+        PopulatedFile(filename='client.h', content=client_h),
+        PopulatedFile(filename='client.cpp', content=client_cpp),
+        PopulatedFile(filename='parser.h', content=parser_h),
+        PopulatedFile(filename='parser.cpp', content=parser_cpp),
+        PopulatedFile(filename='firmware.ino', content=firmware_ino),
+    ]
+
+    return files

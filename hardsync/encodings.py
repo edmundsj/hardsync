@@ -1,5 +1,6 @@
 from typing import Type, Mapping, Dict, Collection
-from hardsync.interfaces import Encoding, Stringable, Exchange, FieldNotFoundError, DecodedExchange, ResponseValues
+from hardsync.interfaces import Encoding, Exchange
+from hardsync.types import FieldNotFoundError, ResponseValues, DecodedExchange, Stringable
 from dataclasses import Field, fields
 
 
