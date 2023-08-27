@@ -108,9 +108,9 @@ This library is under active development. If you have a feature request (or want
 
 ## Remaining (for MVP)
 - Add "ping"-based auto-discovery of serial devices
-- Support for user-defined type mappings, clean syntax for this
-	- Add function to get all the types used and verify they are all defined
-	- Add tests to verify this functionality
+- [DONE] Support for user-defined type mappings, clean syntax for this
+	- [DONE] Add function to get all the types used and verify they are all defined
+	- [DONE] Add tests to verify this functionality
 - [DONE] Add tests for zero-length requests and responses, ensure void declarations are generated
 - [DONE] Fix bugs in generated device arduino code
 - [DONE] Move exchange to top-level of contract
@@ -122,10 +122,11 @@ This library is under active development. If you have a feature request (or want
 - [DONE] Add "Channel" class to allow users to override baud rate, serial number
 
 ## Future (in order of priority)
+- Heavy post-decorating contract validation to ensure that it meets all downstream requirements
+    - Tests with good and bad contracts, verifying that everything meets specifications
 - Support for device-initiate request/response pairs
 - Support for fixed-size arrays in requests and responses
 - Support for binary encoding
-- Heavy post-decorating contract validation to ensure that it meets all downstream requirements
 - Add channel.write wrapper around Serial.print statements to reduce program memory, Serial library flexibility
 - Add example with how to override baud rate and device serial number
 - Variable-size arrays in requests and responses
