@@ -1,8 +1,9 @@
 from types import ModuleType
-from typing import Type
+from typing import Type, List, Any
 from hardsync.interfaces import Exchange, Encoding, TypeMapping
 from hardsync.defaults import DEFAULT_TYPE_MAPPING, DEFAULT_ENCODING
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
+from hardsync.utils import flatten
 import inspect
 
 
@@ -62,3 +63,22 @@ def get_exchanges(module: ModuleType):
             exchanges.append(item[1])
     return exchanges
 
+
+def input_types(exchange: Exchange) -> List[Any]:
+    request_types = [f.type for f in fields(exchange.Request)]
+    response_type = [f.type for f in fields(exchange.Response)]
+    return request_types + response_type
+
+
+def validate_type_mapping(module: ModuleType, type_mapping: TypeMapping):
+    exchanges = get_exchanges(module=module)
+    required_types = set(flatten(
+        [input_types(ex) for ex in exchanges]
+    ))
+    available_types = type_mapping.keys()
+    for t in required_types:
+        assert t in available_types
+
+
+def to_type_mapping_instance(type_mapping: Type) -> TypeMapping:
+    raise NotImplementedError()

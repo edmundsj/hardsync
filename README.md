@@ -109,6 +109,8 @@ This library is under active development. If you have a feature request (or want
 ## Remaining (for MVP)
 - Add "ping"-based auto-discovery of serial devices
 - Support for user-defined type mappings, clean syntax for this
+	- Add function to get all the types used and verify they are all defined
+	- Add tests to verify this functionality
 - [DONE] Add tests for zero-length requests and responses, ensure void declarations are generated
 - [DONE] Fix bugs in generated device arduino code
 - [DONE] Move exchange to top-level of contract

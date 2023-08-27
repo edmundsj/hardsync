@@ -1,7 +1,7 @@
 import inspect
 
 from hardsync.dynamics import get_exchanges_permissive, transform_to_dataclasses, apply_defaults, get_exchanges
-from hardsync.interfaces import Exchange
+from hardsync.interfaces import Exchange, TypeMapping
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
 from dataclasses import is_dataclass, fields, field, dataclass
@@ -102,3 +102,9 @@ def test_get_exchanges():
     assert actual == desired
 
 
+def test_input_types():
+    raise AssertionError()
+
+
+def test_validate_type_mapping():
+    raise AssertionError()

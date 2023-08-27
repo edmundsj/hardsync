@@ -1,6 +1,7 @@
 import pytest
 import os
-from hardsync.generators.common import CaseType, detect_case, convert_case, starting_whitespace, flatten, write
+from hardsync.generators.common import CaseType, detect_case, convert_case, starting_whitespace, write
+from hardsync.utils import flatten
 from hardsync.types import PopulatedFile
 
 

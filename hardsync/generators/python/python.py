@@ -3,7 +3,8 @@ import itertools
 from dataclasses import is_dataclass, fields
 from typing import Type, Sequence, List, Any, TypeVar
 import os
-from hardsync.generators.common import convert_case, CaseType, populate_template, Language, PYTHON_INDENT, flatten
+from hardsync.generators.common import convert_case, CaseType, populate_template, Language, PYTHON_INDENT
+from hardsync.utils import flatten
 from hardsync.dynamics import get_exchanges
 from hardsync.types import PopulatedFile
 from pathlib import Path

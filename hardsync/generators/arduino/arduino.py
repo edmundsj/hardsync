@@ -5,7 +5,8 @@ from typing import Type, List
 from hardsync.interfaces import Exchange, TypeMapping
 from hardsync.types import PopulatedFile
 from hardsync.generators.common import convert_case, CaseType, populate_template
-from hardsync.generators.common import Language, ARDUINO_INDENT, CPP_INDENT, flatten
+from hardsync.generators.common import Language, ARDUINO_INDENT, CPP_INDENT
+from hardsync.utils import flatten
 from hardsync.dynamics import get_exchanges
 from dataclasses import fields
 from types import ModuleType

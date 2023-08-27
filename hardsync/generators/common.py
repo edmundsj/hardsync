@@ -2,9 +2,8 @@ import re
 import os
 import enum
 import logging
-from typing import Mapping, Sequence, List, TypeVar
+from typing import Mapping, Sequence, TypeVar
 from pathlib import Path
-import itertools
 from hardsync.types import PopulatedFile
 
 logger = logging.getLogger('generator')
@@ -21,13 +20,6 @@ class Language(enum.Enum):
     ARDUINO = "arduino"
     CPP = "cpp"
     PYTHON = "python"
-
-
-T = TypeVar('T')
-
-
-def flatten(nested_list: Sequence[Sequence[T]]) -> List[T]:
-    return list(itertools.chain.from_iterable(nested_list))
 
 
 def indent(language: Language):
