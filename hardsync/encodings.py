@@ -12,19 +12,21 @@ class AsciiEncoding(Encoding):
     exchange_terminator = "\n"
 
     @staticmethod
-    def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], is_request=True):
+    def encode(exchange: Type[Exchange], values: Mapping[str, Stringable | str], is_request=True) -> bytes:
         encoded_args = AsciiEncoding._encode_args(exchange=exchange, values=values)
         if is_request:
             r = 'Request'
         else:
             r = 'Response'
         encoded_function = exchange.identifier() + r
-        return encoded_function + '(' + encoded_args + ')'
+        encoded_string = encoded_function + '(' + encoded_args + ')' + AsciiEncoding.exchange_terminator
+        return encoded_string.encode('ascii')
 
     @staticmethod
-    def decode(exchange: Type[Exchange], contents: str) -> DecodedExchange:
-        decoded_args = AsciiEncoding._decode_args(contents=contents, exchange=exchange)
-        decoded_name = AsciiEncoding._decode_name(contents=contents)
+    def decode(exchange: Type[Exchange], contents: bytes) -> DecodedExchange:
+        decoded_str = contents.decode('ascii')
+        decoded_args = AsciiEncoding._decode_args(contents=decoded_str, exchange=exchange)
+        decoded_name = AsciiEncoding._decode_name(contents=decoded_str)
         return DecodedExchange(name=decoded_name, values=decoded_args)
 
     @staticmethod
@@ -42,13 +44,6 @@ class AsciiEncoding(Encoding):
         return contents[start+1:stop]
 
     @staticmethod
-    def _lookup_field_type(name: str, available_fields: Collection[Field]):
-        for field in available_fields:
-            if field.name == name:
-                return field.type
-        raise FieldNotFoundError('Could not find field {name} in exchange')
-
-    @staticmethod
     def _decode_args(exchange: Type[Exchange], contents: str, request=True) -> Dict[str, Stringable | str]:
         inner_string = AsciiEncoding._arg_string(contents=contents)
         args = inner_string.split(AsciiEncoding.argument_delimiter) if inner_string else []
@@ -60,10 +55,18 @@ class AsciiEncoding(Encoding):
 
         for arg in args:
             key, value = arg.split(AsciiEncoding.argument_assigner)
+            breakpoint()
             target_type = AsciiEncoding._lookup_field_type(name=key, available_fields=decode_fields)
             values[key] = target_type(value)
 
         return values
+
+    @staticmethod
+    def _lookup_field_type(name: str, available_fields: Collection[Field]):
+        for field in available_fields:
+            if field.name == name:
+                return field.type
+        raise FieldNotFoundError('Could not find field {name} in exchange')
 
     @staticmethod
     def _decode_name(contents: str) -> str:

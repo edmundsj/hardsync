@@ -2,11 +2,14 @@ import platform
 import click
 import os
 import logging
+import configparser
 from pathlib import Path
 import hardsync
 from hardsync.generators.python import generate as generate_python
 from hardsync.generators.arduino import generate as generate_arduino
 from hardsync.generators.common import write, preface_string, Language
+from hardsync.defaults import DEFAULT_ENCODING, DEFAULT_CHANNEL
+from hardsync.discovery import pyserial_discover
 from hardsync.dynamics import apply_defaults
 import importlib
 import importlib.util
@@ -15,7 +18,7 @@ from types import ModuleType
 from typing import Sequence
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('hardsync')
 
 def to_cpp_str(lines: Sequence[str]):
     snippet = ''
@@ -76,15 +79,49 @@ def main(context, contract: str, output_dir: str, force: bool):
 
 @main.command(help="Output information useful for debugging")
 def dump():
-    """
-    Creates a helpful output for the user
-    """
     click.echo(f'hardsync_version: {hardsync.__version__}')
     click.echo(f'hardsync_hash: {hardsync.__hash__}')
     click.echo(f'os_name: {os.name}')
     click.echo(f'platform: {platform.system()}')
     click.echo(f'platform_version: {platform.uname()[3]}')
     click.echo(f'python_version: {platform.python_version()}')
+
+
+@main.command(help="Automatic device discovery. If using custom encoding, make sure to run hardsync cconfig first.")
+def discover():
+    parser = configparser.ConfigParser()
+    parser.read('hardsync.ini')
+    try:
+        preferred_serial = parser['DEFAULT']['device_serial']
+    except KeyError:
+        preferred_serial = ''
+
+    # HACK. THIS REQUIRES CONTRACT TO BE SPECIFIED AND PARSED TO GET THE ENCODING
+    # AND WILL NOT WORK IF THE USER IS USING A CUSTOM OR NON-ASCII ENCODING
+    channel = DEFAULT_CHANNEL
+    serial_numbers = pyserial_discover(encoding=DEFAULT_ENCODING, channel=channel, preferred_serial=preferred_serial)
+    if len(serial_numbers) == 1:
+        if serial_numbers[0] != preferred_serial:
+            click.echo("")
+            click.echo("To add this device permanently to your project configuration, run:")
+            click.echo(f"python3 -m hardsync config --device-serial {serial_numbers[0]}")
+        else:
+            logger.info("hardsync.ini file already configured to use this device. Nothing to do.")
+    elif len(serial_numbers) > 1:
+        logger.error(f"Found multiple devices running hardsync firmware. Serial numbers are {serial_numbers}")
+
+
+@main.command(help="Configure your hardsync project with device and system-specific information")
+@click.option('--device-serial', type=str, required=False)
+def config(device_serial: str):
+    parser = configparser.ConfigParser()
+    parser['DEFAULT'] = {'device_serial': device_serial}
+
+    logger.info("Writing hardsync.ini file...")
+    with open('hardsync.ini', 'w') as file:
+        parser.write(file)
+
+    logger.info("Done.")
 
 
 if __name__ == '__main__':

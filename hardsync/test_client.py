@@ -21,7 +21,7 @@ class Ping(Exchange):
 def test_ping_with_client():
     mock_serial_instance = Mock()
     mock_serial_instance.isOpen.return_value = True
-    mock_serial_instance.read_until = lambda expected: "PingResponse()"
+    mock_serial_instance.read_until = lambda expected: b"PingResponse()\n"
 
     class MockOpenContextManager:
         def __enter__(self):
@@ -44,7 +44,7 @@ def test_ping_with_client():
 def test_error_with_client():
     mock_serial_instance = Mock()
     mock_serial_instance.isOpen.return_value = True
-    mock_serial_instance.read_until = lambda expected: "ErrorResponse()"
+    mock_serial_instance.read_until = lambda expected: b"ErrorResponse()\n"
 
     class MockOpenContextManager:
         def __enter__(self):

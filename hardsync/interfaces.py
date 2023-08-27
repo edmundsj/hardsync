@@ -18,12 +18,12 @@ class Encoding(ABC):
 
     @staticmethod
     @abstractmethod
-    def encode(exchange: Type[Exchange], values: Mapping, is_request: bool) -> str | bytes:
+    def encode(exchange: Type[Exchange], values: Mapping, is_request: bool) -> bytes:
         pass
 
     @staticmethod
     @abstractmethod
-    def decode(exchange: Type[Exchange], contents: str | bytes) -> DecodedExchange:
+    def decode(exchange: Type[Exchange], contents: bytes) -> DecodedExchange:
         pass
 
 
@@ -59,7 +59,6 @@ class Exchange(ABC):
 @dataclass
 class Channel(ABC):
     baud_rate: BaudRate
-    channel_identifier: str  # For example, device serial number
 
     @abstractmethod
     def open(self) -> Serial:
