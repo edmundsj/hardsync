@@ -105,25 +105,9 @@ All targets are support both on the client- and device- side. That being said, t
 This library is based on simple request/response-based communication. The *client* - this can be the device OR your computer, sends a *request* to the *server* (which can be either your PC or your device), and the server returns a *response*. This request-response communication is referred to as an *exchange*, and it is the *exchanges* that are the most important element of your contract.
 
 ## Feature Request
-This library is under active development. If you have a feature request (or want to change the priority of the features below), submit an issue on this repository.
+This library is under active development. If you have a feature request, or want to change the priority of planned features (see below), submit an issue on this repository.
 
-
-## Remaining (for MVP)
-- Add "ping"-based auto-discovery of serial devices (require runtime pass-in)
-- [DONE] Support for user-defined type mappings, clean syntax for this
-	- [DONE] Add function to get all the types used and verify they are all defined
-	- [DONE] Add tests to verify this functionality
-- [DONE] Add tests for zero-length requests and responses, ensure void declarations are generated
-- [DONE] Fix bugs in generated device arduino code
-- [DONE] Move exchange to top-level of contract
-- [DONE] Fix code generation so that it generates in the current directory, not the module directory.
-- [DONE] Publish package to PyPi
-- [DONE] Add generated client-side code
-- [DONE] Add "ping" default request/response to firmware + client code
-- [DONE] Add Getting started flow for how to actually use it
-- [DONE] Add "Channel" class to allow users to override baud rate, serial number
-
-## Future (in order of priority)
+## Planned features (in order of priority)
 - Heavy post-decorating contract validation to ensure that it meets all downstream requirements
     - Tests with good and bad contracts, verifying that everything meets specifications
 - Support for device-initiate request/response pairs
@@ -131,6 +115,7 @@ This library is under active development. If you have a feature request (or want
 - Support for binary encoding
 - Add channel.write wrapper around Serial.print statements to reduce program memory, Serial library flexibility
 - Add example with how to override baud rate and device serial number
+- Support for multiple response fields
 - Variable-size arrays in requests and responses
 - Verify that generated client-side code is valid python
 - Set up CI for automatic testing and publishing to PyPi
@@ -142,7 +127,6 @@ This library is under active development. If you have a feature request (or want
 - Add example of how to add an additional target to the framework
 - Support for overriding device implementation (see below)
 - "time" types
-- Support for multiple response fields
 - Casting of non-string request types when received by device
 - Support specifying the output directories with a config file in a project
 - Add @asciiencoding, @utf8encoding, and @binaryencoding decorators
@@ -156,6 +140,19 @@ This library is under active development. If you have a feature request (or want
 - Add verilog target
 - Add VHDL target
 - Add support for default values in contract, make these optional kwargs with defaults
+- [DONE] Add "ping"-based auto-discovery of serial devices (require runtime pass-in)
+- [DONE] Support for user-defined type mappings, clean syntax for this
+	- [DONE] Add function to get all the types used and verify they are all defined
+	- [DONE] Add tests to verify this functionality
+- [DONE] Add tests for zero-length requests and responses, ensure void declarations are generated
+- [DONE] Fix bugs in generated device arduino code
+- [DONE] Move exchange to top-level of contract
+- [DONE] Fix code generation so that it generates in the current directory, not the module directory.
+- [DONE] Publish package to PyPi
+- [DONE] Add generated client-side code
+- [DONE] Add "ping" default request/response to firmware + client code
+- [DONE] Add Getting started flow for how to actually use it
+- [DONE] Add "Channel" class to allow users to override baud rate, serial number
 - [DONE] Add a hash of the `hardsync` codebase in a comment in all generated code for complete traceability
 - [DONE] Add the version number of hardsync used to generate files in a comment
 - [DONE] Replace exceptions with ERROR logging on receiving a ErrorResponse
