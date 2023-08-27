@@ -31,8 +31,10 @@ def pyserial_discover(
         discovered_serial = _attempt_connection(port=port, channel=channel, encoding=encoding, timeout=timeout.seconds)
         if discovered_serial:
             discovered_serials.append(discovered_serial)
+        if discovered_serial == preferred_serial:
+            return discovered_serials
 
-    if not discovered_serial and available_ports:
+    if not discovered_serials and available_ports:
         logger.error('Unable to find compatible device. Ensure you have uploaded hardsync firmware, and try again')
     elif not available_ports:
         logger.error('Unable to find any connected devices. Are you sure your device is on and plugged in?')
