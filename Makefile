@@ -13,5 +13,6 @@ clean:
 install:
 	curl -sSL https://install.python-poetry.org | python3 -
 	poetry install
-	curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=~/local/bin sh
+	mkdir -p ~/.local/bin
+	curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=~/.local/bin sh
 
