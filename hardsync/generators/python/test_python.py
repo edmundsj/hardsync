@@ -30,6 +30,17 @@ class CurrentReading:
         current: float
 
 
+class DoAction:
+    @dataclass
+    class Request:
+        pass
+
+    @dataclass
+    class Response:
+        pass
+
+
+
 def test_generate_exchange_str():
     # Test 1: MeasureVoltage class
     expected = [
@@ -62,6 +73,14 @@ def test_generate_request_for_measure_voltage():
     result = request_function(MeasureVoltage)
     assert result == expected, f"Expected:\n{expected}\nGot:\n{result}"
 
+
+def test_generate_request_for_void_both():
+    expected = [
+        'def request_do_action(self) -> DecodedExchange:',
+        PYTHON_INDENT + 'return self.request(',
+        PYTHON_INDENT * 2 + 'request_values={},',
+        PYTHON_INDENT + ')',
+    ]
 
 def test_generate_request_for_current_reading():
     expected = [

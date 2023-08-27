@@ -30,6 +30,15 @@ class MeasureVoltage(Exchange):
         voltage: float
 
 
+class DoAction(Exchange):
+    @dataclass
+    class Request:
+        pass
+
+    @dataclass
+    class Response:
+        pass
+
 
 def test_wrapper_implementation():
     actual = wrapper_implementation(exchange=MeasureVoltage, type_mapping=DEFAULT_TYPE_MAPPING)
@@ -62,6 +71,12 @@ def test_respond_invocation():
 def test_virtual_declaration():
     actual = virtual_declaration(exchange=MeasureVoltage, type_mapping=DEFAULT_TYPE_MAPPING)
     desired = ["virtual double measureVoltage(int channel, double integration_time) const;"]
+    assert actual == desired
+
+
+def test_virtual_declaration_void():
+    actual = virtual_declaration(exchange=DoAction, type_mapping=DEFAULT_TYPE_MAPPING)
+    desired = ["virtual void doAction() const;"]
     assert actual == desired
 
 
