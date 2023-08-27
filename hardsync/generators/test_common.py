@@ -1,6 +1,16 @@
 import pytest
 import os
-from hardsync.generators.common import CaseType, detect_case, convert_case, starting_whitespace, write
+from hardsync.generators.common import (
+    CaseType,
+    detect_case,
+    convert_case,
+    starting_whitespace,
+    write,
+    Language,
+    comment_string,
+    preface_string
+)
+
 from hardsync.utils import flatten
 from hardsync.types import PopulatedFile
 
@@ -58,3 +68,36 @@ def test_write(tmp_path):
     with open(full_path, 'r') as read_file:
         actual = read_file.read()
         assert actual == desired
+
+
+@pytest.mark.parametrize(
+    'language,desired',
+    (
+            (Language.CPP, '//'),
+            (Language.ARDUINO, '//'),
+            (Language.PYTHON, '#'),
+    )
+)
+def test_comment_string(language, desired):
+    actual = comment_string(language=language)
+    assert actual == desired
+
+
+@pytest.mark.parametrize(
+    'language,comment',
+    (
+            (Language.PYTHON, '#'),
+            (Language.CPP, '//'),
+            (Language.ARDUINO, '//'),
+    )
+)
+def test_preface_string(language, comment):
+    actual_string = preface_string(language=language)
+    lines = actual_string.split('\n')
+    version_in_any = any(['hardsync_version' in line for line in lines])
+    hash_in_any = any(['hardsync_hash' in line for line in lines])
+    comment_in_all = all([line.startswith(comment) for line in lines if line != ''])
+
+    assert version_in_any
+    assert hash_in_any
+    assert comment_in_all
