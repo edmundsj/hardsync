@@ -1,7 +1,9 @@
+import platform
 import click
 import os
 import logging
 from pathlib import Path
+import hardsync
 from hardsync.generators.python import generate as generate_python
 from hardsync.generators.arduino import generate as generate_arduino
 from hardsync.generators.common import write, preface_string, Language
@@ -50,23 +52,39 @@ def generate(contract: ModuleType, output_dir: Path, force=False):
         write(file=file, dirname=output_dir, force=force, preface=preface)
 
 
-@click.command()
-@click.argument('contract', type=str)
+@click.group(invoke_without_command=True)
+@click.option('--contract', type=str)
 @click.option('--output-dir', required=False)
 @click.option('--force', required=False, default=False, type=bool, is_flag=True)
-def main(contract: str, output_dir: str, force: bool):
-    contract = Path(contract)
-    if not output_dir:
-        output_dir = Path(os.getcwd()) / 'generated'
-    if not os.path.exists(contract):
-        raise ValueError('Contract file path does not exist')
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+@click.pass_context
+def main(context, contract: str, output_dir: str, force: bool):
+    if context.invoked_subcommand is None:
 
-    output_dir = Path(output_dir)
+        contract = Path(contract)
+        if not output_dir:
+            output_dir = Path(os.getcwd()) / 'generated'
+        if not os.path.exists(contract):
+            raise ValueError('Contract file path does not exist')
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
-    contract_module = load_contract(contract_path=contract)
-    generate(output_dir=output_dir, contract=contract_module, force=force)
+        output_dir = Path(output_dir)
+
+        contract_module = load_contract(contract_path=contract)
+        generate(output_dir=output_dir, contract=contract_module, force=force)
+
+
+@main.command(help="Output information useful for debugging")
+def dump():
+    """
+    Creates a helpful output for the user
+    """
+    click.echo(f'hardsync_version: {hardsync.__version__}')
+    click.echo(f'hardsync_hash: {hardsync.__hash__}')
+    click.echo(f'os_name: {os.name}')
+    click.echo(f'platform: {platform.system()}')
+    click.echo(f'platform_version: {platform.uname()[3]}')
+    click.echo(f'python_version: {platform.python_version()}')
 
 
 if __name__ == '__main__':
