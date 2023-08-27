@@ -81,6 +81,12 @@ def generate(contract: ModuleType) -> List[PopulatedFile]:
         template = template_file.read()
         contents = populate_template(template=template, replacements=replacements, language=Language.PYTHON)
         file = PopulatedFile(filename='client.py', content=contents)
-        return [file]
+
+    application_filename = dir_name / 'templates' / 'application.py'
+    with open(application_filename, 'r') as application_file:
+        application = application_file.read()
+        app_file = PopulatedFile(filename='application.py', content=application, is_main=True)
+
+    return [file, app_file]
 
 

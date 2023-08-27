@@ -102,7 +102,7 @@ def starting_whitespace(input_string: str, match_string: str) -> str:
 def write(dirname: Path, file: PopulatedFile, force=False):
     full_path = dirname / file.filename
     if os.path.exists(full_path) and file.is_main and not force:
-        logger.info(f"Found existing main file {file.filename}. Skipping write. Override this with --force")
+        logger.info(f"Found existing main file {file.filename} at {full_path}. Skipping write. Override this by adding the --force flag")
         return
 
     with open(full_path, 'w') as file_to_write:
