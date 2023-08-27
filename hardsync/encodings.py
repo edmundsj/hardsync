@@ -55,7 +55,6 @@ class AsciiEncoding(Encoding):
 
         for arg in args:
             key, value = arg.split(AsciiEncoding.argument_assigner)
-            breakpoint()
             target_type = AsciiEncoding._lookup_field_type(name=key, available_fields=decode_fields)
             values[key] = target_type(value)
 
