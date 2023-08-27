@@ -1,5 +1,5 @@
-import toml
 import argparse
+import toml
 from pathlib import Path
 from typing import Mapping
 

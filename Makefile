@@ -14,14 +14,13 @@ test: clean
 	arduino-cli compile --fqbn arduino:avr:uno generated/firmware
 
 sync:
-	python3 build.py --hash $$(git rev-parse HEAD)  # updates the version and hash
+	python3 sync.py --hash $$(git rev-parse HEAD)  # updates the version and hash
 
 clean:
 	rm -rf generated
 
 install:
 	curl -sSL https://install.python-poetry.org | python3 -
-	pip install toml
 	poetry install
 	mkdir -p ~/.local/bin
 	curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=~/.local/bin sh
