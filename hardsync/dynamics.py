@@ -7,6 +7,8 @@ from hardsync.utils import flatten
 import inspect
 
 
+SPECIAL_CLASS_NAMES = ['Encoding', 'Channel', 'TypeMapping']
+
 def apply_defaults(module: ModuleType):
     apply_encoding(module=module, encoding=DEFAULT_ENCODING)
     apply_exchange_inheritance(module)
@@ -41,12 +43,9 @@ def apply_type_mapping_inheritance(module: ModuleType, type_mapping: Type[TypeMa
 
 
 def get_exchanges_permissive(module: ModuleType):
-    possible_exchanges = inspect.getmembers(module, predicate=inspect.isclass)
-    exchanges = []
-    for poss in possible_exchanges:
-        if hasattr(poss[1], 'Request'):
-            exchanges.append(poss[1])
-    return exchanges
+    possible_exchanges = [mem[1] for mem in inspect.getmembers(module, predicate=inspect.isclass)]
+    no_special_classes = [ex for ex in possible_exchanges if ex.__name__ not in SPECIAL_CLASS_NAMES]
+    return no_special_classes
 
 
 def transform_to_dataclasses(module: ModuleType):

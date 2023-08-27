@@ -10,8 +10,12 @@ from hardsync.dynamics import (
     input_types,
     validate_type_mapping,
     validate,
+    SPECIAL_CLASS_NAMES,
 )
-from hardsync.interfaces import Exchange, TypeMapping
+from hardsync.interfaces import (
+    Exchange,
+    TypeMapping as TypeMappingI
+)
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
 from typing import List
@@ -30,14 +34,33 @@ def test_get_exchanges_permissive():
     assert exchanges == [MeasureVoltage]
 
 
-def test_get_exchanges_permissive_none():
+def test_get_exchanges_permissive_exclusions():
     module = ModuleType('hi')
 
-    class RandomClass:
-        class OtherRandomClass:
+    class MeasureVoltage:
+        class Request:
             pass
 
-    module.RandomClass = RandomClass
+    class TypeMapping:
+        pass
+
+    class Encoding:
+        pass
+
+    class Channel:
+        pass
+
+    module.MeasureVoltage = MeasureVoltage
+    module.TypeMapping = TypeMapping
+    module.Encoding = Encoding
+    module.Channel = Channel
+    exchanges = get_exchanges_permissive(module)
+    assert len(exchanges) == 1
+    assert exchanges == [MeasureVoltage]
+
+
+def test_get_exchanges_permissive_none():
+    module = ModuleType('hi')
 
     exchanges = get_exchanges_permissive(module)
     assert exchanges == []
@@ -143,7 +166,7 @@ def test_input_types_none():
 
 
 def test_getitem_type_mapping():
-    class MyMapping(TypeMapping):
+    class MyMapping(TypeMappingI):
         double: float
         String: str
         int: int
@@ -154,7 +177,7 @@ def test_getitem_type_mapping():
 
 
 def test_validate_type_mapping():
-    class MyMapping(TypeMapping):
+    class MyMapping(TypeMappingI):
         double: float
         String: str
         int: int
@@ -164,7 +187,7 @@ def test_validate_type_mapping():
 
 
 def test_validate_type_mapping_missing():
-    class MyMapping(TypeMapping):
+    class MyMapping(TypeMappingI):
         double: float
         String: str
         int: int
@@ -184,13 +207,13 @@ def test_validate_happy():
         class Response:
             pass
 
-    class MyMapping(TypeMapping):
+    class TypeMapping(TypeMappingI):
         double: float
         String: str
         int: int
 
     module = ModuleType('mod')
-    module.TypeMapping = MyMapping
+    module.TypeMapping = TypeMapping
     module.DoSomething = DoSomething
 
     validate(module)
@@ -201,13 +224,13 @@ def test_validate_sad():
         class Request:
             pass
 
-    class MyMapping(TypeMapping):
+    class TypeMapping(TypeMappingI):
         double: float
         String: str
         int: int
 
     module = ModuleType('mod')
-    module.TypeMapping = MyMapping
+    module.TypeMapping = TypeMapping
     module.DoSomething = DoSomething
 
     with pytest.raises(AssertionError):
