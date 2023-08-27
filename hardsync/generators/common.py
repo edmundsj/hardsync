@@ -1,9 +1,13 @@
 import re
+import os
 import enum
+import logging
 from typing import Mapping, Sequence, List, TypeVar
 from pathlib import Path
 import itertools
 from hardsync.types import PopulatedFile
+
+logger = logging.getLogger('generator')
 
 
 class CaseType(enum.Enum):
@@ -95,7 +99,12 @@ def starting_whitespace(input_string: str, match_string: str) -> str:
     return whitespaces
 
 
-def write(dirname: Path, file: PopulatedFile):
+def write(dirname: Path, file: PopulatedFile, force=False):
     full_path = dirname / file.filename
+    if os.path.exists(full_path) and file.is_main and not force:
+        logger.info(f"Found existing main file {file.filename}. Skipping write. Override this with --force")
+        return
+
     with open(full_path, 'w') as file_to_write:
         file_to_write.write(file.content)
+        logger.info(f"Wrote {full_path}")

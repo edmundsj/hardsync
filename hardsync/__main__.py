@@ -1,5 +1,6 @@
 import click
 import os
+import logging
 from pathlib import Path
 from hardsync.transpiler import Targets
 from hardsync.generators.python import generate as generate_python
@@ -13,6 +14,8 @@ from types import ModuleType
 
 from typing import Sequence
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def to_cpp_str(lines: Sequence[str]):
     snippet = ''
@@ -29,26 +32,29 @@ def load_contract(contract_path: Path) -> ModuleType:
     return contract
 
 
-def generate(contract: ModuleType, output_dir: Path):
+def generate(contract: ModuleType, output_dir: Path, force=False):
     type_mapping = contract.TypeMapping
 
     arduino_files = generate_arduino(contract=contract, type_mapping=type_mapping)
     arduino_output_dir = output_dir / 'firmware'
-    os.makedirs(arduino_output_dir)
+
+    if not os.path.exists(arduino_output_dir):
+        os.makedirs(arduino_output_dir)
 
     for file in arduino_files:
-        write(file=file, dirname=arduino_output_dir)
+        write(file=file, dirname=arduino_output_dir, force=force)
 
     python_files = generate_python(contract=contract)
 
     for file in python_files:
-        write(file=file, dirname=output_dir)
+        write(file=file, dirname=output_dir, force=force)
 
 
 @click.command()
 @click.argument('contract', type=str)
 @click.option('--output-dir', required=False)
-def main(contract: str, output_dir: str):
+@click.option('--force', required=False, default=False, type=bool, is_flag=True)
+def main(contract: str, output_dir: str, force: bool):
     contract = Path(contract)
     if not output_dir:
         output_dir = Path(os.getcwd()) / 'generated'
@@ -60,7 +66,7 @@ def main(contract: str, output_dir: str):
     output_dir = Path(output_dir)
 
     contract_module = load_contract(contract_path=contract)
-    generate(output_dir=output_dir, contract=contract_module)
+    generate(output_dir=output_dir, contract=contract_module, force=force)
 
 
 if __name__ == '__main__':

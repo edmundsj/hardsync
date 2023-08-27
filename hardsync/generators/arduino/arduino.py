@@ -181,7 +181,7 @@ def generate(contract: ModuleType, type_mapping: TypeMapping) -> List[PopulatedF
         PopulatedFile(filename='client.cpp', content=client_cpp),
         PopulatedFile(filename='parser.h', content=parser_h),
         PopulatedFile(filename='parser.cpp', content=parser_cpp),
-        PopulatedFile(filename='firmware.ino', content=firmware_ino),
+        PopulatedFile(filename='firmware.ino', content=firmware_ino, is_main=True),
     ]
 
     return files

@@ -27,6 +27,7 @@ class DecodedExchange(NamedTuple):
 class PopulatedFile(NamedTuple):
     filename: str
     content: str
+    is_main: bool = False
 
 
 BaudRate = Literal[
