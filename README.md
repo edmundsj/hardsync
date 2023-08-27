@@ -150,10 +150,12 @@ This library is under active development. If you have a feature request (or want
 - Add retries on non-error response.
 - Add optional timeouts
 - Client-side async support
-- Add a hash of the contract and the `hardsync` codebase in a comment in all generated code for complete traceability
+- Add a hash of the contract used to generate auto-generated files
 - Add verilog target
 - Add VHDL target
 - Add support for default values in contract, make these optional kwargs with defaults
+- [DONE] Add a hash of the `hardsync` codebase in a comment in all generated code for complete traceability
+- [DONE] Add the version number of hardsync used to generate files in a comment
 - [DONE] Replace exceptions with ERROR logging on receiving a ErrorResponse
 - [DONE] Add INFO logging for sent requests / received responses
 - [DONE] Add INFO logging for generated files being written
