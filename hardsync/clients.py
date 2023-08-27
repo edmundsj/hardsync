@@ -1,3 +1,4 @@
+import logging
 from dataclasses import is_dataclass, dataclass
 from typing import TypeVar, Type, Mapping, Dict, Any
 from hardsync.interfaces import Channel, Exchange, Encoding, Client
@@ -9,6 +10,9 @@ T = TypeVar('T')
 
 class DeviceNotFoundError(Exception):
     pass
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -26,11 +30,14 @@ class BaseClient(Client):
 
         with self.channel.open() as ch:
             ch.write(data=encoded_representation)
+            logger.info(f"Wrote: {encoded_representation}")
             contents = ch.read_until(expected=self.encoding.exchange_terminator)
             decoded_contents = self.encoding.decode(exchange=exchange, contents=contents)
+            logger.info(f"Received: {encoded_representation}")
 
             if decoded_contents.name == 'ErrorResponse':
-                raise ReceivedErrorResponse(f'Received Error response. Full response contents {contents}')
+                logger.error(f"Received Error from device: {decoded_contents}")
+
             return decoded_contents
 
     # to be overriden by a wrapper.

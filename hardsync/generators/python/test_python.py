@@ -81,7 +81,7 @@ def test_populate_template():
     desired_filename = 'client.py'
 
     files = generate(contract=module)
-    assert len(files) == 1
+    assert len(files) == 2
 
     desired_filepath = Path(os.path.dirname(os.path.abspath(__file__))) / 'test_data' / desired_filename
     with open(desired_filepath, 'r') as desired_file:

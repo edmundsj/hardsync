@@ -120,9 +120,6 @@ This library is under active development. If you have a feature request (or want
 - [DONE] Add "Channel" class to allow users to override baud rate, serial number
 
 ## Future (in order of priority)
-- Add INFO logging for generated files being written
-- Add INFO logging for sent requests / received responses
-- Replace exceptions with ERROR logging on receiving a ErrorResponse
 - Support for device-initiate request/response pairs
 - Support for fixed-size arrays in requests and responses
 - Support for binary encoding
@@ -154,6 +151,9 @@ This library is under active development. If you have a feature request (or want
 - Add verilog target
 - Add VHDL target
 - Add support for default values in contract, make these optional kwargs with defaults
+- [DONE] Replace exceptions with ERROR logging on receiving a ErrorResponse
+- [DONE] Add INFO logging for sent requests / received responses
+- [DONE] Add INFO logging for generated files being written
 - [DONE] Verify as part of testing that generated arduino code compiles
 - [DONE] Add tests to verify that the command-line tool works as expected
 - [efficiency] Change the size of the C++ Arguments array to be specific to the number of arguments actually present.
