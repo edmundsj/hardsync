@@ -12,13 +12,16 @@ from hardsync.transpiler import (
     Targets,
     verify_template,
     ReplacementsMissingVariableError,
-    classes,
     ContractError
 )
 from hardsync.encodings import AsciiEncoding
 import types
 
-STANDARD_MAPPING: TypeMapping = TypeMapping({float: 'double', int: 'int', str: "std::string", None: 'void'})
+
+class STANDARD_MAPPING(TypeMapping):
+    double: float
+    int: int
+    void: None
 
 
 class MeasureVoltage(Exchange):
@@ -195,44 +198,3 @@ def test_verify_template_missing_replacement():
         verify_template(template=template, replacements=replacements)
 
 
-def test_classes_good_contract():
-    good_contract = types.ModuleType('good_contract')
-
-    class MeasureVoltage:
-        @dataclass
-        class Request:
-            channel: int
-
-        @dataclass
-        class Response:
-            voltage: float
-
-    good_contract.MeasureVoltage = MeasureVoltage
-    desired_classes = classes(contract=good_contract)
-    assert MeasureVoltage in desired_classes
-
-
-def test_classes_bad_contract_no_response():
-    good_contract = types.ModuleType('good_contract')
-
-    class MeasureVoltage:
-        @dataclass
-        class Request:
-            channel: int
-
-    good_contract.MeasureVoltage = MeasureVoltage
-    with pytest.raises(ContractError):
-        classes(contract=good_contract)
-
-
-def test_classes_bad_contract_no_request():
-    good_contract = types.ModuleType('good_contract')
-
-    class MeasureVoltage:
-        @dataclass
-        class Response:
-            channel: int
-
-    good_contract.MeasureVoltage = MeasureVoltage
-    with pytest.raises(ContractError):
-        classes(contract=good_contract)
