@@ -109,7 +109,7 @@ This library is under active development. If you have a feature request (or want
 
 
 ## Remaining (for MVP)
-- Add "ping"-based auto-discovery of serial devices
+- Add "ping"-based auto-discovery of serial devices (require runtime pass-in)
 - [DONE] Support for user-defined type mappings, clean syntax for this
 	- [DONE] Add function to get all the types used and verify they are all defined
 	- [DONE] Add tests to verify this functionality
@@ -192,9 +192,12 @@ In dealing with embedded systems for the last decade, I became acutely aware of 
 
 ### Why are contracts written in python? Why not YAML or JSON or just plain text?
 1. Programming languages are powerful, and python is perhaps the most powerful programming language in existence. Its dynamic programming capabilities make defining contracts in a python file fairly straightforward, and having a contract defined directly in a programming language allows for overriding and specifying functionality at a level that would simply not be possible in any text-based format.
-1. It has minimalist syntax similar to YAML. The language doesn't get in the way of the concepts being expressed.
+1. It has minimalist syntax similar to YAML. The language does a remarkable job of "staying out of the way" and letting users express their intent.
 1. It is the most accessible language on the planet. Far fewer people know YAML than know python.
 
 
 ### How does hardsync handle communication setup?
 Hardync, by default, assumes that your device can communicate over a serial interface. All devices running the hardsync firmware will respond to a `PingRequest()` with a `PingResponse()`, and so hardsync attepmts to open available serial devices until it finds one that responds with the expected response. Unless you override it, the baud rate is set to 9600. If you know your device's serial number, you can specify it in your contract to avoid hardsync attempting to open other serial ports.
+
+### Why don't I put my device serial number in the contract?
+Initially, this was the plan - everything required for communication from host to device would be included in the contract. This adds a bit of reliability and predcitability when you are working with a single device. However, this has a few serious drawbacks. The first is that contracts tied to a single device, and can't be shared between people working on the same type of hardware, or identical clones of the same piece of hardware. The second issue is that it wouldn't be possible to run multiple devices on the same system using the same contract, which is a common use-case. The final issue is more fundamental - a contract should specify the *interface* between a host and device, and ideally is not specific to a *particular* host or *particular* device. So long as they have the required libraries, it should work. For this reason, I decided the best option is to pass in the device identifier (serial number) at runtime. If one is not passed in, the auto-discovery mechanism will attempt to find a device.
