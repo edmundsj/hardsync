@@ -87,6 +87,8 @@ This creates a `hardsync.ini` file in your current directory. Here you can speci
 
 NOTE: By default, when using a `hardsync.ini` file, the main sketch for the device-side and client-side code is omitted by default, to avoid accidentally overriding it.
 
+## Debugging
+If you encounter an unexpected error and it's not immediately obvious how to fix it from the error message you received, submit a bug report on this repository. Make sure to attach the output of `hardsync dump` to the issue to help with reproducing it and identifying the issue.
 
 ## Supported Targets
 All targets are support both on the client- and device- side. That being said, the `arduino` target are intended to be used on the device-side, and the `python` target is intended to be used on the host side.
