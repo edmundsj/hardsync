@@ -108,7 +108,8 @@ This library is under active development. If you have a feature request, or want
 ## Planned features (in order of priority)
 - Heavy post-decorating contract validation to ensure that it meets all downstream requirements
     - Tests with good and bad contracts, verifying that everything meets specifications
-- Support for device-initiate request/response pairs
+- Break out config into separate config.py module, heavily test
+- Support for device-initiated request/response pairs
 - Support for fixed-size arrays in requests and responses
 - Support for binary encoding
 - Add channel.write wrapper around Serial.print statements to reduce program memory, Serial library flexibility

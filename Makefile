@@ -2,19 +2,19 @@
 .PHONY: clean
 .PHONY: install
 
+publish: build
+	poetry publish
+
+build: sync test
+	poetry build
+
 test: clean
 	poetry run pytest
-	poetry run python -m hardsync hardsync/example/contract.py
+	poetry run python -m hardsync --contract hardsync/example/contract.py
 	arduino-cli compile --fqbn arduino:avr:uno generated/firmware
 
 sync:
 	python3 build.py --hash $$(git rev-parse HEAD)  # updates the version and hash
-
-build: sync
-	poetry build
-
-publish:
-	poetry publish
 
 clean:
 	rm -rf generated
