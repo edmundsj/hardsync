@@ -7,8 +7,10 @@ test: clean
 	poetry run python -m hardsync hardsync/example/contract.py
 	arduino-cli compile --fqbn arduino:avr:uno generated/firmware
 
-build:
+sync:
 	python3 build.py --hash $$(git rev-parse HEAD)  # updates the version and hash
+
+build: sync
 	poetry build
 
 publish:
