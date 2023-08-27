@@ -56,25 +56,29 @@ def generate(contract: ModuleType, output_dir: Path, force=False):
 
 
 @click.group(invoke_without_command=True)
-@click.option('--contract', type=str)
-@click.option('--output-dir', required=False)
-@click.option('--force', required=False, default=False, type=bool, is_flag=True)
-@click.pass_context
-def main(context, contract: str, output_dir: str, force: bool):
-    if context.invoked_subcommand is None:
+@click.option('--contract', type=str, required=True, help="path to your contract")
+@click.option('--output-dir', required=False, help="directory for generated files")
+@click.option(
+    '--force',
+    required=False,
+    default=False,
+    type=bool,
+    is_flag=True,
+    help="If added, overrides the main sketch and main application"
+)
+def main(contract: str, output_dir: str, force: bool):
+    contract = Path(contract)
+    if not output_dir:
+        output_dir = Path(os.getcwd()) / 'generated'
+    if not os.path.exists(contract):
+        raise ValueError('Contract file path does not exist')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-        contract = Path(contract)
-        if not output_dir:
-            output_dir = Path(os.getcwd()) / 'generated'
-        if not os.path.exists(contract):
-            raise ValueError('Contract file path does not exist')
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+    output_dir = Path(output_dir)
 
-        output_dir = Path(output_dir)
-
-        contract_module = load_contract(contract_path=contract)
-        generate(output_dir=output_dir, contract=contract_module, force=force)
+    contract_module = load_contract(contract_path=contract)
+    generate(output_dir=output_dir, contract=contract_module, force=force)
 
 
 @main.command(help="Output information useful for debugging")
