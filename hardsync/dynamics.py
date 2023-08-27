@@ -1,8 +1,8 @@
 from types import ModuleType
-from typing import Type, List, Any
+from typing import Type, List, Any, Set
 from hardsync.interfaces import Exchange, Encoding, TypeMapping
 from hardsync.defaults import DEFAULT_TYPE_MAPPING, DEFAULT_ENCODING
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, is_dataclass
 from hardsync.utils import flatten
 import inspect
 
@@ -31,11 +31,11 @@ def apply_exchange_inheritance(module: ModuleType):
 
 
 # TODO: THIS IS A BUG. FIX
-def apply_type_mapping_inheritance(module: ModuleType, type_mapping: TypeMapping):
+def apply_type_mapping_inheritance(module: ModuleType, type_mapping: Type[TypeMapping]):
     if not hasattr(module, 'TypeMapping'):
         module.TypeMapping = type_mapping
     else:
-        if not isinstance(module.TypeMapping, TypeMapping):
+        if not issubclass(module.TypeMapping, TypeMapping):
             new_type_mapping = type('TypeMapping', (TypeMapping,), dict(module.TypeMapping.__class__.__dict__))
             setattr(module, 'TypeMapping', new_type_mapping)
 
@@ -64,21 +64,44 @@ def get_exchanges(module: ModuleType):
     return exchanges
 
 
-def input_types(exchange: Exchange) -> List[Any]:
+def input_types(exchange: Type[Exchange]) -> List[Any]:
     request_types = [f.type for f in fields(exchange.Request)]
     response_type = [f.type for f in fields(exchange.Response)]
     return request_types + response_type
 
 
-def validate_type_mapping(module: ModuleType, type_mapping: TypeMapping):
-    exchanges = get_exchanges(module=module)
-    required_types = set(flatten(
-        [input_types(ex) for ex in exchanges]
-    ))
-    available_types = type_mapping.keys()
+def validate(contract: ModuleType):
+    exchanges = get_exchanges_permissive(module=contract)
+    for ex in exchanges:
+        validate_exchange(ex)
+    all_input_types = set(flatten([input_types(ex) for ex in exchanges]))
+    validate_type_mapping(required_types=all_input_types, type_mapping=contract.TypeMapping)
+
+
+def validate_type_mapping(required_types: Set[Any], type_mapping: Type[TypeMapping]):
+    available_types = set(type_mapping.keys())
+    missing_types = set()
     for t in required_types:
-        assert t in available_types
+        if t not in available_types:
+            missing_types.add(t)
+    if missing_types:
+        raise AssertionError(f"Type mapping is missing {missing_types}")
 
 
-def to_type_mapping_instance(type_mapping: Type) -> TypeMapping:
-    raise NotImplementedError()
+def validate_exchange(exchange: Type):
+    messages = []
+    if not issubclass(exchange, Exchange):
+        messages.append(f"exchange {exchange} is not a subclass of Exchange class")
+    if not hasattr(exchange, 'Request'):
+        messages.append(f"exchange {exchange} must have a Request specified")
+    else:
+        if not is_dataclass(exchange.Request):
+            messages.append(f"exchange.Request must be a dataclass")
+    if not hasattr(exchange, 'Response'):
+        messages.append(f"exchange {exchange} must have a response specified")
+    else:
+        if not is_dataclass(exchange.Response):
+            messages.append(f"exchange.Response must be a dataclass")
+
+    if messages:
+        raise AssertionError(messages)

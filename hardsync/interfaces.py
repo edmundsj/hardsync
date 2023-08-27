@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from abc import ABC, abstractmethod
 from typing import Mapping, Type, Dict
 from serial import Serial
@@ -27,8 +27,16 @@ class Encoding(ABC):
         pass
 
 
-class TypeMapping(ABC, Dict):
-    pass
+class TypeMapping:
+
+    @classmethod
+    def __class_getitem__(cls, item):
+        lookup_dict = {val: key for key, val in cls.__annotations__.items()}
+        return lookup_dict[item]
+
+    @classmethod
+    def keys(cls):
+        return cls.__annotations__.values()
 
 
 class Exchange(ABC):

@@ -1,9 +1,20 @@
 import inspect
 
-from hardsync.dynamics import get_exchanges_permissive, transform_to_dataclasses, apply_defaults, get_exchanges
+import pytest
+
+from hardsync.dynamics import (
+    get_exchanges_permissive,
+    transform_to_dataclasses,
+    apply_defaults,
+    get_exchanges,
+    input_types,
+    validate_type_mapping,
+    validate,
+)
 from hardsync.interfaces import Exchange, TypeMapping
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
+from typing import List
 from dataclasses import is_dataclass, fields, field, dataclass
 
 
@@ -103,8 +114,105 @@ def test_get_exchanges():
 
 
 def test_input_types():
-    raise AssertionError()
+    class MeasureVoltage(Exchange):
+        @dataclass
+        class Request:
+            channel: int
+
+        @dataclass
+        class Response:
+            voltage: float
+    desired_types = [int, float]
+    actual_types = input_types(exchange=MeasureVoltage)
+    assert actual_types == desired_types
+
+
+def test_input_types_none():
+    class MeasureVoltage(Exchange):
+        @dataclass
+        class Request:
+            pass
+
+        @dataclass
+        class Response:
+            pass
+
+    desired_types = []
+    actual_types = input_types(exchange=MeasureVoltage)
+    assert actual_types == desired_types
+
+
+def test_getitem_type_mapping():
+    class MyMapping(TypeMapping):
+        double: float
+        String: str
+        int: int
+
+    assert MyMapping[float] == 'double'
+    assert MyMapping[str] == 'String'
+    assert MyMapping[int] == 'int'
 
 
 def test_validate_type_mapping():
-    raise AssertionError()
+    class MyMapping(TypeMapping):
+        double: float
+        String: str
+        int: int
+
+    required_types = {float, str, int}
+    validate_type_mapping(required_types=required_types, type_mapping=MyMapping)
+
+
+def test_validate_type_mapping_missing():
+    class MyMapping(TypeMapping):
+        double: float
+        String: str
+        int: int
+
+    required_types = {float, str, List[str], int}
+    with pytest.raises(AssertionError) as e:
+        validate_type_mapping(required_types=required_types, type_mapping=MyMapping)
+
+
+def test_validate_happy():
+    class DoSomething(Exchange):
+        @dataclass
+        class Request:
+            pass
+
+        @dataclass
+        class Response:
+            pass
+
+    class MyMapping(TypeMapping):
+        double: float
+        String: str
+        int: int
+
+    module = ModuleType('mod')
+    module.TypeMapping = MyMapping
+    module.DoSomething = DoSomething
+
+    validate(module)
+
+
+def test_validate_sad():
+    class DoSomething:
+        class Request:
+            pass
+
+    class MyMapping(TypeMapping):
+        double: float
+        String: str
+        int: int
+
+    module = ModuleType('mod')
+    module.TypeMapping = MyMapping
+    module.DoSomething = DoSomething
+
+    with pytest.raises(AssertionError):
+        validate(module)
+
+
+
+
