@@ -98,13 +98,14 @@ def starting_whitespace(input_string: str, match_string: str) -> str:
     return whitespaces
 
 
-def write(dirname: Path, file: PopulatedFile, force=False):
+def write(dirname: Path, file: PopulatedFile, force=False, preface=''):
     full_path = dirname / file.filename
     if os.path.exists(full_path) and file.is_main and not force:
         logger.info(f"Found existing main file {file.filename} at {full_path}. Skipping write. Override this by adding the --force flag")
         return
 
     with open(full_path, 'w') as file_to_write:
+        file_to_write.write(preface)
         file_to_write.write(file.content)
         logger.info(f"Wrote {full_path}")
 
@@ -120,5 +121,6 @@ def preface_string(language: Language) -> str:
     preface = ''
     for line in lines:
         preface += startswith + line + endswith
+    lines.append('\n')
 
     return preface

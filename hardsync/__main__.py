@@ -2,12 +2,10 @@ import click
 import os
 import logging
 from pathlib import Path
-from hardsync.transpiler import Targets
 from hardsync.generators.python import generate as generate_python
 from hardsync.generators.arduino import generate as generate_arduino
-from hardsync.generators.common import write
+from hardsync.generators.common import write, preface_string, Language
 from hardsync.dynamics import apply_defaults
-from hardsync.defaults import DEFAULT_GENERATED_DIR, DEFAULT_TARGET_PLATFORM
 import importlib
 import importlib.util
 from types import ModuleType
@@ -42,12 +40,14 @@ def generate(contract: ModuleType, output_dir: Path, force=False):
         os.makedirs(arduino_output_dir)
 
     for file in arduino_files:
-        write(file=file, dirname=arduino_output_dir, force=force)
+        preface = preface_string(language=Language.ARDUINO)
+        write(file=file, dirname=arduino_output_dir, force=force, preface=preface)
 
     python_files = generate_python(contract=contract)
 
     for file in python_files:
-        write(file=file, dirname=output_dir, force=force)
+        preface = preface_string(language=Language.PYTHON)
+        write(file=file, dirname=output_dir, force=force, preface=preface)
 
 
 @click.command()
