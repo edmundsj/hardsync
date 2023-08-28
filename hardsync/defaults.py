@@ -14,6 +14,7 @@ class TypeMapping(TypeMappingI):
     double: float
     int: int
     String: str
+    void: None
 
 
 DEFAULT_TYPE_MAPPING = TypeMapping

@@ -57,6 +57,15 @@ def test_wrapper_implementation():
     assert actual == desired
 
 
+def test_wrapper_implementation_empty():
+    actual = wrapper_implementation(exchange=DoAction, type_mapping=DEFAULT_TYPE_MAPPING)
+    desired = [
+        'void Client::doActionWrapper() const {',
+        CPP_INDENT + 'this->doAction();'
+    ]
+    assert actual[0] == desired[0]
+    assert actual[1] == desired[1]
+
 def test_respond_invocation():
     actual = respond_invocation(exchange=MeasureVoltage, type_mapping=DEFAULT_TYPE_MAPPING)
     desired = [
@@ -86,13 +95,23 @@ def test_wrapper_declaration():
     assert actual == desired
 
 
-def test_core_implementation_declaration():
+def test_core_implementation_declaration_double():
     actual = core_implementation(exchange=MeasureVoltage, type_mapping=DEFAULT_TYPE_MAPPING)
     desired = [
         "double measureVoltage(int channel, double integration_time) const {",
         CPP_INDENT + '// YOUR CODE GOES HERE',
         '}',
     ]
+    assert actual == desired
+
+
+def test_core_implementation_declaration_bare_request_response():
+    actual = core_implementation(exchange=DoAction, type_mapping=DEFAULT_TYPE_MAPPING)
+    desired = [
+        "void doAction() const {",
+        CPP_INDENT + '// YOUR CODE GOES HERE',
+        '}',
+        ]
     assert actual == desired
 
 

@@ -15,7 +15,7 @@ dir_name = Path(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = dir_name / 'templates'
 
 
-def virtual_declaration(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
+def virtual_declaration(exchange: Type[Exchange], type_mapping: Type[TypeMapping]) -> List[str]:
     function_name = convert_case(exchange.identifier(), CaseType.CAMEL_CASE)
     cpp_code = "virtual "
 
@@ -36,7 +36,7 @@ def virtual_declaration(exchange: Type[Exchange], type_mapping: TypeMapping) -> 
     return [cpp_code]
 
 
-def wrapper_declaration(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
+def wrapper_declaration(exchange: Type[Exchange], type_mapping: Type[TypeMapping]) -> List[str]:
     function_name = convert_case(exchange.identifier(), CaseType.CAMEL_CASE)
     cpp_code = "void "
 
@@ -47,13 +47,17 @@ def wrapper_declaration(exchange: Type[Exchange], type_mapping: TypeMapping) -> 
     return [cpp_code]
 
 
-def core_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
+def core_implementation(exchange: Type[Exchange], type_mapping: Type[TypeMapping]) -> List[str]:
     function_name = convert_case(exchange.identifier(), CaseType.CAMEL_CASE)
     lines = []
-    if len(fields(exchange.Response)) != 1:
+    response_fields = fields(exchange.Response)
+    if len(response_fields) > 1:
         raise ValueError("TO BE IMPLEMENTED: Response that supports more than one value")
-    function_type = fields(exchange.Response)[0].type
-    # TODO: HACK. THIS HAS TO BE MODIFIED FOR MULTIPLE RESPONSE TYPES
+
+    if len(response_fields) == 0:
+        function_type = None
+    elif len(response_fields) == 1:
+        function_type = fields(exchange.Response)[0].type
 
     line1 = f"{type_mapping[function_type]} {function_name}("
     line1 += ', '.join([f"{type_mapping[field.type]} {field.name}" for field in fields(exchange.Request)])
@@ -65,7 +69,7 @@ def core_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) -> 
     return lines
 
 
-def respond_invocation(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
+def respond_invocation(exchange: Type[Exchange], type_mapping: Type[TypeMapping]) -> List[str]:
     class_name = exchange.identifier()
     function_name = convert_case(class_name, to_case=CaseType.CAMEL_CASE)
     lines = []
@@ -85,7 +89,10 @@ def respond_invocation(exchange: Type[Exchange], type_mapping: TypeMapping) -> L
     return lines
 
 
-def wrapper_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) -> List[str]:
+def wrapper_implementation(exchange: Type[Exchange], type_mapping: Type[TypeMapping]) -> List[str]:
+    if len(fields(exchange.Response)) > 1:
+        raise ValueError("TO BE IMPLEMENTED: Response cannot have more than one field.")
+
     class_name = exchange.identifier()
     function_name = convert_case(class_name, CaseType.CAMEL_CASE)
     request_fields = ", ".join(
@@ -99,7 +106,12 @@ def wrapper_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) 
     lines = []
 
     lines.append(f'void Client::{function_name}Wrapper({request_fields}) const {{')
-    lines.append(f'{CPP_INDENT}{response_fields} = this->{function_name}({request_field_names});')
+    line = f'{CPP_INDENT}{response_fields}'
+    if response_fields:
+        line += ' = '
+    line += f'this->{function_name}({request_field_names});'
+    lines.append(line)
+
     lines.append(f'{CPP_INDENT}Serial.print("{class_name}Response");')
     lines.append(f'{CPP_INDENT}Serial.print(ARGUMENT_BEGINNER);')
 
@@ -114,7 +126,7 @@ def wrapper_implementation(exchange: Type[Exchange], type_mapping: TypeMapping) 
     return lines
 
 
-def populate_client_template_cpp(contract: ModuleType, type_mapping: TypeMapping) -> str:
+def populate_client_template_cpp(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'client.cpp'
     exchanges = get_exchanges(contract)
     wrapper_implementations = flatten([wrapper_implementation(ex, type_mapping=type_mapping) for ex in exchanges])
@@ -129,7 +141,7 @@ def populate_client_template_cpp(contract: ModuleType, type_mapping: TypeMapping
         return populated_template
 
 
-def populate_client_template_h(contract: ModuleType, type_mapping: TypeMapping) -> str:
+def populate_client_template_h(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'client.h'
     exchanges = get_exchanges(contract)
     virtual_declarations = flatten([virtual_declaration(exchange=ex, type_mapping=type_mapping) for ex in exchanges])
@@ -144,21 +156,21 @@ def populate_client_template_h(contract: ModuleType, type_mapping: TypeMapping) 
         return populated_template
 
 
-def populate_parser_template_h(contract: ModuleType, type_mapping: TypeMapping) -> str:
+def populate_parser_template_h(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'parser.h'
     with open(file_path) as file:
         contents = file.read()
         return contents
 
 
-def populate_parser_template_cpp(contract: ModuleType, type_mapping: TypeMapping) -> str:
+def populate_parser_template_cpp(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'parser.cpp'
     with open(file_path) as file:
         contents = file.read()
         return contents
 
 
-def populate_firmware_ino(contract: ModuleType, type_mapping: TypeMapping) -> str:
+def populate_firmware_ino(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'firmware.ino'
     exchanges = get_exchanges(contract)
     core_implementations = flatten([core_implementation(exchange=ex, type_mapping=type_mapping) for ex in exchanges])
@@ -171,7 +183,7 @@ def populate_firmware_ino(contract: ModuleType, type_mapping: TypeMapping) -> st
         return populated_template
 
 
-def generate(contract: ModuleType, type_mapping: TypeMapping) -> List[PopulatedFile]:
+def generate(contract: ModuleType, type_mapping: Type[TypeMapping]) -> List[PopulatedFile]:
     client_h = populate_client_template_h(contract=contract, type_mapping=type_mapping)
     client_cpp = populate_client_template_cpp(contract=contract, type_mapping=type_mapping)
     parser_h = populate_parser_template_h(contract=contract, type_mapping=type_mapping)
