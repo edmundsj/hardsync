@@ -1,0 +1,2 @@
+class DoAction:
+    pass
