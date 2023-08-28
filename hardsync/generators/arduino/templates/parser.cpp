@@ -95,3 +95,21 @@ String extractString(ParsedFunction* parsed_function, String arg_name) {
     return "";
 
 }
+
+String encode(Argument *args, int len, String name, bool is_request) {
+    String return_string = "";
+    if (is_request == true) {
+        return_string += name + "Request" + ARGUMENT_BEGINNER;
+    } else {
+        return_string += name + "Response" + ARGUMENT_BEGINNER;
+    }
+    for (int i = 0; i < len; i++) {
+        return_string += args[i].key + ARGUMENT_ASSIGNER + args[i].value;
+        if (i < len - 1) {
+            return_string += ARGUMENT_DELIMITER;
+        }
+    }
+    return_string += ARGUMENT_ENDER;
+    return_string += EXCHANGE_TERMINATOR;
+    return return_string;
+}

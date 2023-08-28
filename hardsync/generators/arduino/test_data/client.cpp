@@ -32,6 +32,10 @@ void Client::measureVoltageWrapper(int channel, double integration_time) const {
     Serial.print(EXCHANGE_TERMINATOR);
 }
 
+double Client::requestTimeDelta(double current_time) {
+
+}
+
 void Client::unidentifiedCommand(String command_name) {
     Serial.print("ErrorResponse(msg=Unidentified command: ");
     Serial.print(command_name);

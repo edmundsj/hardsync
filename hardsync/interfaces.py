@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 from abc import ABC, abstractmethod
-from typing import Mapping, Type, Dict
+from typing import Mapping, Type, Dict, Any
 from serial import Serial
 
 from hardsync.types import DecodedExchange, BaudRate
@@ -30,7 +30,7 @@ class Encoding(ABC):
 class TypeMapping:
 
     @classmethod
-    def __class_getitem__(cls, item):
+    def __class_getitem__(cls, item: Any) -> str:
         lookup_dict = {val: key for key, val in cls.__annotations__.items()}
         return lookup_dict[item]
 

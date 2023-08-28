@@ -17,28 +17,22 @@ void Client::begin() {
 }
 
 void Client::pingWrapper() const {
-    Serial.print("PingResponse()");
-    Serial.print(EXCHANGE_TERMINATOR);
+    String response = encode({}, 0, "Ping", false);
+    Serial.print(response);
 }
 
 // {{wrapper_implementations}}
+// {{request_implementations}}
 
 void Client::unidentifiedCommand(String command_name) {
-    Serial.print("ErrorResponse(msg=Unidentified command: ");
-    Serial.print(command_name);
-    Serial.print(ARGUMENT_ENDER);
-    Serial.print(EXCHANGE_TERMINATOR);
+    Argument args[1] = {{"msg", "Unidentified command" + command_name}};
+    String response = encode(args, 1, "Error", false);
+    Serial.print(response);
 }
 
 void Client::badCommandFormat(String message) {
-    Serial.print("ErrorResponse");
-    Serial.print(ARGUMENT_BEGINNER);
-    Serial.print("msg");
-    Serial.print(ARGUMENT_ASSIGNER);
-    Serial.print("Unable to parse command. Message should be of format XXXRequest(key=val). Raw message received: ");
-    Serial.print(message);
-    Serial.print(ARGUMENT_ENDER);
-    Serial.print(EXCHANGE_TERMINATOR);
+    String response = encode({}, 0, "Error", false);
+    Serial.print(response);
 }
 
 void Client::respond() {

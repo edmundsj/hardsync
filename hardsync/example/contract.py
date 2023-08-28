@@ -6,6 +6,27 @@ class MeasureVoltage:
     class Response:
         voltage: float
 
+class MeasureCurrent:
+    class Request:
+        integration_time: float
+        channel: int
+
+    class Response:
+        current: float
+
+
+class ActuateMotor:
+    class Request:
+        num_steps: int
+    class Response:
+        pass
+
+class ActuateMotor2:
+    class Request:
+        num_steps: int
+    class Response:
+        pass
+
 
 class Channel:
     class Host:

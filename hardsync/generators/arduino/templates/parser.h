@@ -26,5 +26,6 @@ int extractInt(ParsedFunction* parsed_function, String arg_name);
 double extractDouble(ParsedFunction* parsed_function, String arg_name);
 float extractFloat(ParsedFunction* parsed_function, String arg_name);
 String extractString(ParsedFunction* parsed_function, String arg_name);
+String encode(Argument *args, int len, String name, bool is_request);
 
 #endif

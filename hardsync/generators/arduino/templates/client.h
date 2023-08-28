@@ -17,6 +17,7 @@ public:
 
     // {{virtual_declarations}}
     // {{wrapper_declarations}}
+    // {{request_declarations}}
 
     void begin();
     void unidentifiedCommand(String command_name);
