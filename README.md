@@ -106,16 +106,14 @@ This library is based on simple request/response-based communication. The *clien
 This library is under active development. If you have a feature request, or want to change the priority of planned features (see below), submit an issue on this repository.
 
 ## Planned features (in order of priority)
-- Heavy post-decorating contract validation to ensure that it meets all downstream requirements
-    - Tests with good and bad contracts, verifying that everything meets specifications
-- Break out config into separate config.py module, heavily test
 - Support for device-initiated request/response pairs
 - Support for fixed-size arrays in requests and responses
 - Support for binary encoding
-- Add channel.write wrapper around Serial.print statements to reduce program memory, Serial library flexibility
-- Add example with how to override baud rate and device serial number
+- Add channel.write wrapper around Serial.print statements to reduce dynamic memory, Serial library flexibility
 - Support for multiple response fields
 - Variable-size arrays in requests and responses
+- Break out config into separate config.py module, heavily test
+- Add example with how to override baud rate and device serial number
 - Verify that generated client-side code is valid python
 - Set up CI for automatic testing and publishing to PyPi
 - Implement hardsync.ini file, static configuration
@@ -139,6 +137,8 @@ This library is under active development. If you have a feature request, or want
 - Add verilog target
 - Add VHDL target
 - Add support for default values in contract, make these optional kwargs with defaults
+- [DONE] Heavy post-decorating contract validation to ensure that it meets all downstream requirements
+- [DONE] Tests with good and bad contracts, verifying that everything meets specifications
 - [DONE] Add "ping"-based auto-discovery of serial devices (require runtime pass-in)
 - [DONE] Support for user-defined type mappings, clean syntax for this
 	- [DONE] Add function to get all the types used and verify they are all defined
