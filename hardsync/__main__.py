@@ -68,6 +68,10 @@ def generate(contract: ModuleType, output_dir: Path, force=False):
     help="If added, overrides the main sketch and main application"
 )
 def main(contract: str, output_dir: str, force: bool):
+    main_undecorated(contract=contract, output_dir=output_dir, force=force)
+
+
+def main_undecorated(contract: str, output_dir: str | Path, force: bool):
     contract = Path(contract)
     if not output_dir:
         output_dir = Path(os.getcwd()) / 'generated'
@@ -81,6 +85,7 @@ def main(contract: str, output_dir: str, force: bool):
     contract_module = load_contract(contract_path=contract)
     with wrap_assertion_error(contract_path=contract):
         generate(output_dir=output_dir, contract=contract_module, force=force)
+
 
 
 @main.command(help="Output information useful for debugging")

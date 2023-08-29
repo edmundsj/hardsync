@@ -1,6 +1,6 @@
 from types import ModuleType
 from typing import Type, List, Any, Set
-from hardsync.interfaces import Exchange, Encoding, TypeMapping
+from hardsync.interfaces import Exchange, Encoding, TypeMapping, ContractError
 from hardsync.defaults import DEFAULT_TYPE_MAPPING, DEFAULT_ENCODING
 from dataclasses import dataclass, fields, is_dataclass
 from hardsync.utils import flatten
@@ -15,6 +15,7 @@ def apply_defaults(module: ModuleType):
     apply_type_mapping_inheritance(module=module, type_mapping=DEFAULT_TYPE_MAPPING)
 
     transform_to_dataclasses(module)
+    validate(contract=module)
 
 
 def apply_encoding(module: ModuleType, encoding: Type[Encoding]):
@@ -38,7 +39,7 @@ def apply_type_mapping_inheritance(module: ModuleType, type_mapping: Type[TypeMa
         module.TypeMapping = type_mapping
     else:
         if not issubclass(module.TypeMapping, TypeMapping):
-            new_type_mapping = type('TypeMapping', (TypeMapping,), dict(module.TypeMapping.__class__.__dict__))
+            new_type_mapping = type('TypeMapping', (TypeMapping,), dict(module.TypeMapping.__dict__))
             setattr(module, 'TypeMapping', new_type_mapping)
 
 
@@ -84,7 +85,7 @@ def validate_type_mapping(required_types: Set[Any], type_mapping: Type[TypeMappi
         if t not in available_types:
             missing_types.add(t)
     if missing_types:
-        raise AssertionError(f"Type mapping is missing {missing_types}")
+        raise ContractError(f"Type mapping is missing {missing_types}")
 
 
 def validate_exchange(exchange: Type):
@@ -103,4 +104,4 @@ def validate_exchange(exchange: Type):
             messages.append(f"exchange.Response must be a dataclass")
 
     if messages:
-        raise AssertionError(messages)
+        raise ContractError(messages)

@@ -21,7 +21,7 @@ def virtual_declaration(exchange: Type[Exchange], type_mapping: Type[TypeMapping
 
     response_fields = fields(exchange.Response)
     if len(response_fields) > 1:
-        raise ValueError(f"Unspported number of response fields: {len(fields(exchange.Response))} only support 1 field")
+        raise AssertionError(f"Unspported number of response fields: {len(fields(exchange.Response))} only support 1 field")
 
     if len(response_fields) == 1:
         response_field = fields(exchange.Response)[0]
@@ -52,7 +52,7 @@ def core_implementation(exchange: Type[Exchange], type_mapping: Type[TypeMapping
     lines = []
     response_fields = fields(exchange.Response)
     if len(response_fields) > 1:
-        raise ValueError("TO BE IMPLEMENTED: Response that supports more than one value")
+        raise AssertionError("TO BE IMPLEMENTED: Response that supports more than one value")
 
     if len(response_fields) == 0:
         function_type = None
@@ -91,7 +91,7 @@ def respond_invocation(exchange: Type[Exchange], type_mapping: Type[TypeMapping]
 
 def wrapper_implementation(exchange: Type[Exchange], type_mapping: Type[TypeMapping]) -> List[str]:
     if len(fields(exchange.Response)) > 1:
-        raise ValueError("TO BE IMPLEMENTED: Response cannot have more than one field.")
+        raise AssertionError("TO BE IMPLEMENTED: Response cannot have more than one field.")
 
     class_name = exchange.identifier()
     function_name = convert_case(class_name, CaseType.CAMEL_CASE)

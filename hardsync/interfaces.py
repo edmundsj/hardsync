@@ -8,6 +8,10 @@ from serial import Serial
 from hardsync.types import DecodedExchange, BaudRate
 
 
+class ContractError(Exception):
+    pass
+
+
 @dataclass
 class Encoding(ABC):
     argument_delimiter: str | bytes
