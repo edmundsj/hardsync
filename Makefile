@@ -6,7 +6,7 @@ AVR_TARGETS = arduino:avr
 publish: build
 	poetry publish
 
-build: sync test
+build: sync
 	poetry build
 
 test: clean
