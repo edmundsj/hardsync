@@ -213,9 +213,13 @@ def test_validate_happy():
         String: str
         int: int
 
+    class Encoding(AsciiEncoding):
+        pass
+
     module = ModuleType('mod')
     module.TypeMapping = TypeMapping
     module.DoSomething = DoSomething
+    module.Encoding = Encoding
 
     validate(module)
 

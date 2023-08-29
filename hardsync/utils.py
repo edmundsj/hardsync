@@ -4,6 +4,7 @@ import os
 import platform
 import itertools
 from typing import Sequence, List, TypeVar
+from hardsync.interfaces import ContractError
 import traceback
 from pathlib import Path
 
@@ -32,7 +33,9 @@ def dump() -> str:
 def wrap_assertion_error(contract_path: Path):
     try:
         yield
-    except AssertionError as e:
+    except ContractError as e:
+        raise e
+    except Exception as e:
         dump_info = dump()
         with open(contract_path, 'r') as contract:
             contract_contents = contract.read()
@@ -54,6 +57,3 @@ def wrap_assertion_error(contract_path: Path):
         full_message = '\n'.join(strings)
 
         raise AssertionError(f"{full_message}") from None
-    except Exception as e:
-        # Pass through all other errors
-        raise e

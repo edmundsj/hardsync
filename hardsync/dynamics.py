@@ -1,6 +1,7 @@
 from types import ModuleType
 from typing import Type, List, Any, Set
 from hardsync.interfaces import Exchange, Encoding, TypeMapping, ContractError
+from hardsync.encodings import AsciiEncoding
 from hardsync.defaults import DEFAULT_TYPE_MAPPING, DEFAULT_ENCODING
 from dataclasses import dataclass, fields, is_dataclass
 from hardsync.utils import flatten
@@ -71,11 +72,19 @@ def input_types(exchange: Type[Exchange]) -> List[Any]:
 
 
 def validate(contract: ModuleType):
+    required_classes = ['Encoding', 'TypeMapping']
+    for cls in required_classes:
+        if not hasattr(contract, cls):
+            raise ContractError(f"Contract missing special class: {cls}")
+
     exchanges = get_exchanges_permissive(module=contract)
     for ex in exchanges:
         validate_exchange(ex)
+
     all_input_types = set(flatten([input_types(ex) for ex in exchanges]))
     validate_type_mapping(required_types=all_input_types, type_mapping=contract.TypeMapping)
+
+    validate_encoding(encoding=contract.Encoding)
 
 
 def validate_type_mapping(required_types: Set[Any], type_mapping: Type[TypeMapping]):
@@ -105,3 +114,8 @@ def validate_exchange(exchange: Type):
 
     if messages:
         raise ContractError(messages)
+
+
+def validate_encoding(encoding: Type[Encoding]):
+    if not issubclass(encoding, AsciiEncoding):
+        raise AssertionError("Only ASCII encoding is currently supported.")
