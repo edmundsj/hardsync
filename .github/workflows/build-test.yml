@@ -33,5 +33,6 @@ jobs:
         sudo apt install make
         make install
     - name: Test
-      run: |
-        make test
+      run: make test
+    - name: Build
+      run: make build
