@@ -11,6 +11,7 @@ from hardsync.generators.common import write, preface_string, Language
 from hardsync.defaults import DEFAULT_ENCODING, DEFAULT_CHANNEL
 from hardsync.discovery import pyserial_discover
 from hardsync.dynamics import apply_defaults
+from hardsync.utils import dump as dump_info, wrap_assertion_error
 import importlib
 import importlib.util
 from types import ModuleType
@@ -78,17 +79,14 @@ def main(contract: str, output_dir: str, force: bool):
     output_dir = Path(output_dir)
 
     contract_module = load_contract(contract_path=contract)
-    generate(output_dir=output_dir, contract=contract_module, force=force)
+    with wrap_assertion_error(contract_path=contract):
+        generate(output_dir=output_dir, contract=contract_module, force=force)
 
 
 @main.command(help="Output information useful for debugging")
 def dump():
-    click.echo(f'hardsync_version: {hardsync.__version__}')
-    click.echo(f'hardsync_hash: {hardsync.__hash__}')
-    click.echo(f'os_name: {os.name}')
-    click.echo(f'platform: {platform.system()}')
-    click.echo(f'platform_version: {platform.uname()[3]}')
-    click.echo(f'python_version: {platform.python_version()}')
+    info = dump_info()
+    click.echo(info)
 
 
 @main.command(help="Automatic device discovery. If using custom encoding, make sure to run hardsync cconfig first.")
