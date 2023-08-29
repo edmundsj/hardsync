@@ -14,7 +14,8 @@ from hardsync.dynamics import (
 )
 from hardsync.interfaces import (
     Exchange,
-    TypeMapping as TypeMappingI
+    TypeMapping as TypeMappingI,
+    ContractError,
 )
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
@@ -193,7 +194,7 @@ def test_validate_type_mapping_missing():
         int: int
 
     required_types = {float, str, List[str], int}
-    with pytest.raises(AssertionError) as e:
+    with pytest.raises(ContractError) as e:
         validate_type_mapping(required_types=required_types, type_mapping=MyMapping)
 
 
@@ -233,7 +234,7 @@ def test_validate_sad():
     module.TypeMapping = TypeMapping
     module.DoSomething = DoSomething
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ContractError):
         validate(module)
 
 
