@@ -5,6 +5,3 @@ class TypeMapping:
 class MyExchange:
     class Request:
         hi: int
-
-    class Response:
-        pass
