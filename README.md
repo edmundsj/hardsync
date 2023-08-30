@@ -102,6 +102,16 @@ All targets are support both on the client- and device- side. That being said, t
 ## Architecture
 This library is based on simple request/response-based communication. The *client* - this can be the device OR your computer, sends a *request* to the *server* (which can be either your PC or your device), and the server returns a *response*. This request-response communication is referred to as an *exchange*, and it is the *exchanges* that are the most important element of your contract.
 
+## Examples
+### Overriding the default baud rate
+The default baud rate is set to 9600 to provide a minimum working configuration. If you need faster communication, you can specify that in your contract using the special `Channel` class. For example, if you wanted to set the baud rate to 115200, you would add the following anywhere in your contract:
+
+```
+class Channel:
+    baud_rate = 115200
+```
+NOTE: Baud rates cannot be an arbitrary number, but must be one of the standard commonly-supported baud rates. 
+
 ## Feature Request
 This library is under active development. If you have a feature request, or want to change the priority of planned features (see below), submit an issue on this repository.
 
