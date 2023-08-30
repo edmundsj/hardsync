@@ -8,6 +8,7 @@ class MeasureVoltage:
 
 
 class Channel:
+    baud_rate = 115200
     class Host:
         write_bytes = "serial.write"
         read_until = "serial.read_until"

@@ -9,6 +9,7 @@ from hardsync.dynamics import (
     get_exchanges,
     input_types,
     validate_type_mapping,
+    validate_channel,
     validate,
     SPECIAL_CLASS_NAMES,
 )
@@ -16,6 +17,7 @@ from hardsync.interfaces import (
     Exchange,
     TypeMapping as TypeMappingI,
     ContractError,
+    Channel as ChannelI,
 )
 from hardsync.encodings import AsciiEncoding
 from types import ModuleType
@@ -216,10 +218,14 @@ def test_validate_happy():
     class Encoding(AsciiEncoding):
         pass
 
+    class Channel(ChannelI):
+        pass
+
     module = ModuleType('mod')
     module.TypeMapping = TypeMapping
     module.DoSomething = DoSomething
     module.Encoding = Encoding
+    module.Channel = Channel
 
     validate(module)
 
@@ -242,5 +248,17 @@ def test_validate_sad():
         validate(module)
 
 
+def test_validate_channel_good():
+    class GoodChannel(ChannelI):
+        baud_rate = 9600
 
+    validate_channel(channel=GoodChannel)
+
+
+def test_validate_channel_bad():
+    class BadChannel(ChannelI):
+        baud_rate = 9601
+
+    with pytest.raises(ContractError):
+        validate_channel(channel=BadChannel)
 

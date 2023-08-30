@@ -106,6 +106,8 @@ This library is based on simple request/response-based communication. The *clien
 This library is under active development. If you have a feature request, or want to change the priority of planned features (see below), submit an issue on this repository.
 
 ## Planned features (in order of priority)
+- Add ability to override default baud rate
+- Add example with how to override baud rate
 - Support for device-initiated request/response pairs
 - Support for fixed-size arrays in requests and responses
 - Support for binary encoding
@@ -113,7 +115,7 @@ This library is under active development. If you have a feature request, or want
 - Support for multiple response fields
 - Variable-size arrays in requests and responses
 - Break out config into separate config.py module, heavily test
-- Add example with how to override baud rate and device serial number
+- Add example with how to override device serial number
 - Verify that generated client-side code is valid python
 - Set up CI for automatic testing and publishing to PyPi
 - Implement hardsync.ini file, static configuration
@@ -137,29 +139,7 @@ This library is under active development. If you have a feature request, or want
 - Add verilog target
 - Add VHDL target
 - Add support for default values in contract, make these optional kwargs with defaults
-- [DONE] Heavy post-decorating contract validation to ensure that it meets all downstream requirements
-- [DONE] Tests with good and bad contracts, verifying that everything meets specifications
-- [DONE] Add "ping"-based auto-discovery of serial devices (require runtime pass-in)
-- [DONE] Support for user-defined type mappings, clean syntax for this
-	- [DONE] Add function to get all the types used and verify they are all defined
-	- [DONE] Add tests to verify this functionality
-- [DONE] Add tests for zero-length requests and responses, ensure void declarations are generated
-- [DONE] Fix bugs in generated device arduino code
-- [DONE] Move exchange to top-level of contract
-- [DONE] Fix code generation so that it generates in the current directory, not the module directory.
-- [DONE] Publish package to PyPi
-- [DONE] Add generated client-side code
-- [DONE] Add "ping" default request/response to firmware + client code
-- [DONE] Add Getting started flow for how to actually use it
-- [DONE] Add "Channel" class to allow users to override baud rate, serial number
-- [DONE] Add a hash of the `hardsync` codebase in a comment in all generated code for complete traceability
-- [DONE] Add the version number of hardsync used to generate files in a comment
-- [DONE] Replace exceptions with ERROR logging on receiving a ErrorResponse
-- [DONE] Add INFO logging for sent requests / received responses
-- [DONE] Add INFO logging for generated files being written
-- [DONE] Verify as part of testing that generated arduino code compiles
-- [DONE] Add tests to verify that the command-line tool works as expected
-- [efficiency] Change the size of the C++ Arguments array to be specific to the number of arguments actually present.
+- Change the size of the C++ Arguments array to be specific to the number of arguments actually present.
 
 ## FAQ
 ### Why generated code, and not a universal device library?

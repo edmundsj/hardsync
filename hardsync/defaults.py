@@ -35,7 +35,7 @@ class Ping(Exchange):
 
 
 class Channel(SerialChannel):
-    pass
+    baud_rate = 9600
 
 
-DEFAULT_CHANNEL = Channel(baud_rate=9600, channel_identifier='')
+DEFAULT_CHANNEL = Channel

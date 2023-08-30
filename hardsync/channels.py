@@ -1,12 +1,12 @@
 from hardsync.interfaces import Channel
-from hardsync.types import BaudRate
+from hardsync.types import BaudRateT
 from contextlib import contextmanager
 from serial import Serial
 from serial.tools import list_ports
 
 
 class SerialChannel(Channel):
-    def __init__(self, baud_rate: BaudRate, channel_identifier: str):
+    def __init__(self, baud_rate: BaudRateT, channel_identifier: str):
         super().__init__(baud_rate=baud_rate)
         self.channel_identifier = channel_identifier
 

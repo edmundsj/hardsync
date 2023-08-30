@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 from abc import ABC, abstractmethod
-from typing import Mapping, Type, Dict
+from typing import Mapping, Type, Dict, Protocol, Any
 from serial import Serial
 
-from hardsync.types import DecodedExchange, BaudRate
+from hardsync.types import DecodedExchange, BaudRateT
 
 
 class ContractError(Exception):
@@ -62,7 +62,7 @@ class Exchange(ABC):
 # instance methods.
 @dataclass
 class Channel(ABC):
-    baud_rate: BaudRate
+    baud_rate: BaudRateT
 
     @abstractmethod
     def open(self) -> Serial:
@@ -77,3 +77,9 @@ class Client(ABC):
     @abstractmethod
     def listen(self):
         pass
+
+
+class Contract(Protocol):
+    Encoding: Type[Encoding]
+    Channel: Type[Channel]
+    TypeMapping: Type[TypeMapping]

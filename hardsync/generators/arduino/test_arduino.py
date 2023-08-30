@@ -1,6 +1,7 @@
 from types import ModuleType
 from hardsync.generators.arduino.arduino import (
     generate,
+    serial_begin,
     core_implementation,
     populate_client_template_cpp,
     populate_client_template_h,
@@ -11,7 +12,7 @@ from hardsync.generators.arduino.arduino import (
 )
 from hardsync.generators.common import CPP_INDENT
 from hardsync.interfaces import Exchange
-from hardsync.defaults import DEFAULT_TYPE_MAPPING
+from hardsync.defaults import DEFAULT_TYPE_MAPPING, DEFAULT_CHANNEL
 from dataclasses import dataclass
 from pathlib import Path
 import os
@@ -115,9 +116,18 @@ def test_core_implementation_declaration_bare_request_response():
     assert actual == desired
 
 
+def test_serial_begin():
+    class Channel:
+        baud_rate = 115200
+    actual = serial_begin(channel=Channel)
+    all_actual = ''.join(actual)
+    assert '115200' in all_actual
+
+
 def test_populate_client_template_cpp():
     module = ModuleType('hi')
     module.MeasureVoltage = MeasureVoltage
+    module.Channel = DEFAULT_CHANNEL
     desired_filepath = TEST_DATA_DIR / 'client.cpp'
 
     actual = populate_client_template_cpp(contract=module, type_mapping=DEFAULT_TYPE_MAPPING)
@@ -137,4 +147,17 @@ def test_populate_client_template_h():
         desired = desired_file.read()
 
         assert actual == desired
+
+
+def test_override_baud_rate():
+    class Channel:
+        baud_rate = 115200
+
+    module = ModuleType('hi')
+    module.MeasureVoltage = MeasureVoltage
+    module.Channel = Channel
+    desired_filepath = TEST_DATA_DIR / 'client.cpp'
+
+    actual = populate_client_template_cpp(contract=module, type_mapping=DEFAULT_TYPE_MAPPING)
+    assert '115200' in actual
 

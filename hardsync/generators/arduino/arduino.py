@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import inspect
 from typing import Type, List
-from hardsync.interfaces import Exchange, TypeMapping
+from hardsync.interfaces import Exchange, TypeMapping, Channel, Contract
 from hardsync.types import PopulatedFile
 from hardsync.generators.common import convert_case, CaseType, populate_template
 from hardsync.generators.common import Language, ARDUINO_INDENT, CPP_INDENT
@@ -126,14 +126,23 @@ def wrapper_implementation(exchange: Type[Exchange], type_mapping: Type[TypeMapp
     return lines
 
 
-def populate_client_template_cpp(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
+def serial_begin(channel: Type[Channel]) -> List[str]:
+    lines = [
+        f"Serial.begin({channel.baud_rate});"
+    ]
+    return lines
+
+
+def populate_client_template_cpp(contract: Contract, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'client.cpp'
     exchanges = get_exchanges(contract)
     wrapper_implementations = flatten([wrapper_implementation(ex, type_mapping=type_mapping) for ex in exchanges])
     respond_invocations = flatten([respond_invocation(ex, type_mapping=type_mapping) for ex in exchanges])
+    serial_begins = serial_begin(contract.Channel)
     replacements = {
         'wrapper_implementations': wrapper_implementations,
         'respond_invocations': respond_invocations,
+        'serial_begin': serial_begins,
     }
     with open(file_path, 'r') as file:
         template = file.read()
@@ -141,7 +150,7 @@ def populate_client_template_cpp(contract: ModuleType, type_mapping: Type[TypeMa
         return populated_template
 
 
-def populate_client_template_h(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
+def populate_client_template_h(contract: Contract, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'client.h'
     exchanges = get_exchanges(contract)
     virtual_declarations = flatten([virtual_declaration(exchange=ex, type_mapping=type_mapping) for ex in exchanges])
@@ -156,21 +165,21 @@ def populate_client_template_h(contract: ModuleType, type_mapping: Type[TypeMapp
         return populated_template
 
 
-def populate_parser_template_h(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
+def populate_parser_template_h(contract: Contract, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'parser.h'
     with open(file_path) as file:
         contents = file.read()
         return contents
 
 
-def populate_parser_template_cpp(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
+def populate_parser_template_cpp(contract: Contract, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'parser.cpp'
     with open(file_path) as file:
         contents = file.read()
         return contents
 
 
-def populate_firmware_ino(contract: ModuleType, type_mapping: Type[TypeMapping]) -> str:
+def populate_firmware_ino(contract: Contract, type_mapping: Type[TypeMapping]) -> str:
     file_path = TEMPLATE_DIR / 'firmware.ino'
     exchanges = get_exchanges(contract)
     core_implementations = flatten([core_implementation(exchange=ex, type_mapping=type_mapping) for ex in exchanges])
@@ -183,7 +192,7 @@ def populate_firmware_ino(contract: ModuleType, type_mapping: Type[TypeMapping])
         return populated_template
 
 
-def generate(contract: ModuleType, type_mapping: Type[TypeMapping]) -> List[PopulatedFile]:
+def generate(contract: Contract, type_mapping: Type[TypeMapping]) -> List[PopulatedFile]:
     client_h = populate_client_template_h(contract=contract, type_mapping=type_mapping)
     client_cpp = populate_client_template_cpp(contract=contract, type_mapping=type_mapping)
     parser_h = populate_parser_template_h(contract=contract, type_mapping=type_mapping)

@@ -13,7 +13,7 @@ Client::~Client() = default;
 
 
 void Client::begin() {
-    Serial.begin(9600);
+    // {{serial_begin}}
 }
 
 void Client::pingWrapper() const {

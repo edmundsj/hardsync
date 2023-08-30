@@ -1,8 +1,9 @@
 from types import ModuleType
-from typing import Type, List, Any, Set
-from hardsync.interfaces import Exchange, Encoding, TypeMapping, ContractError
+from typing import Type, List, Any, Set, get_args
+from hardsync.interfaces import Exchange, Encoding, TypeMapping, ContractError, Channel, Contract
 from hardsync.encodings import AsciiEncoding
-from hardsync.defaults import DEFAULT_TYPE_MAPPING, DEFAULT_ENCODING
+from hardsync.defaults import DEFAULT_TYPE_MAPPING, DEFAULT_ENCODING, DEFAULT_CHANNEL
+from hardsync.types import BaudRateT
 from dataclasses import dataclass, fields, is_dataclass
 from hardsync.utils import flatten
 import inspect
@@ -10,10 +11,12 @@ import inspect
 
 SPECIAL_CLASS_NAMES = ['Encoding', 'Channel', 'TypeMapping']
 
+
 def apply_defaults(module: ModuleType):
     apply_encoding(module=module, encoding=DEFAULT_ENCODING)
     apply_exchange_inheritance(module)
     apply_type_mapping_inheritance(module=module, type_mapping=DEFAULT_TYPE_MAPPING)
+    apply_channel(module=module, channel=DEFAULT_CHANNEL)
 
     transform_to_dataclasses(module)
     validate(contract=module)
@@ -25,6 +28,15 @@ def apply_encoding(module: ModuleType, encoding: Type[Encoding]):
             module.Encoding = encoding
     else:
         module.Encoding = encoding
+
+
+def apply_channel(module: ModuleType, channel: Type[Channel]):
+    if not hasattr(module, 'Channel'):
+        module.Channel = channel
+
+    if not issubclass(module.Channel, Channel):
+        new_channel = type('Channel', (Channel,), dict(module.Channel.__dict__))
+        setattr(module, 'Channel', new_channel)
 
 
 def apply_exchange_inheritance(module: ModuleType):
@@ -57,7 +69,7 @@ def transform_to_dataclasses(module: ModuleType):
         setattr(ex, 'Response', dataclass(ex.Response))
 
 
-def get_exchanges(module: ModuleType):
+def get_exchanges(module: Contract):
     exchanges = []
     for item in inspect.getmembers(module, predicate=inspect.isclass):
         if issubclass(item[1], Exchange):
@@ -72,7 +84,7 @@ def input_types(exchange: Type[Exchange]) -> List[Any]:
 
 
 def validate(contract: ModuleType):
-    required_classes = ['Encoding', 'TypeMapping']
+    required_classes = ['Encoding', 'TypeMapping', 'Channel']
     for cls in required_classes:
         if not hasattr(contract, cls):
             raise ContractError(f"Contract missing special class: {cls}")
@@ -119,3 +131,11 @@ def validate_exchange(exchange: Type):
 def validate_encoding(encoding: Type[Encoding]):
     if not issubclass(encoding, AsciiEncoding):
         raise AssertionError("Only ASCII encoding is currently supported.")
+
+
+def validate_channel(channel: Type[Channel]):
+    if not hasattr(channel, 'baud_rate'):
+        raise ContractError("Channel class missing baud_rate variable.")
+    allowed_values = get_args(BaudRateT)
+    if channel.baud_rate not in allowed_values:
+        raise ContractError(f"Using improper baud rate. Available values are {allowed_values}")

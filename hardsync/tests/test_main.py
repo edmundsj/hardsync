@@ -3,7 +3,7 @@ import os
 import shutil
 from hardsync import test_data_dir
 from hardsync.__main__ import generate, main_undecorated
-from hardsync.interfaces import Exchange, ContractError
+from hardsync.interfaces import Exchange, ContractError, Channel as ChannelI
 from dataclasses import dataclass
 from types import ModuleType
 from hardsync.defaults import DEFAULT_TYPE_MAPPING
@@ -21,9 +21,14 @@ class MeasureVoltage(Exchange):
         voltage: float
 
 
+class Channel(ChannelI):
+    baud_rate = 9600
+
+
 contract = ModuleType('hello')
 contract.MeasureVoltage = MeasureVoltage
 contract.TypeMapping = DEFAULT_TYPE_MAPPING
+contract.Channel = Channel
 
 desired_client_files = ('client.py', 'application.py')
 desired_firmware_files = ('client.h', 'client.cpp', 'parser.h', 'parser.cpp', 'firmware.ino')

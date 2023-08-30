@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 from typing import Dict, NamedTuple, Literal, Protocol
 
 
@@ -30,7 +31,7 @@ class PopulatedFile(NamedTuple):
     is_main: bool = False
 
 
-BaudRate = Literal[
+BaudRateT = Literal[
     300, 1200, 2400, 4800, 9600, 19_200, 38_400, 57_600,
     115_200, 230_400, 460_800, 921600, 1_000_000,
     2_000_000
