@@ -1,7 +1,8 @@
-from typing import Type, Mapping, Dict, Collection
+from typing import Type, Mapping, Dict, Collection, Any
 from hardsync.interfaces import Encoding, Exchange
 from hardsync.types import FieldNotFoundError, ResponseValues, DecodedExchange, Stringable
 from dataclasses import Field, fields
+import struct
 
 
 class AsciiEncoding(Encoding):
@@ -72,3 +73,63 @@ class AsciiEncoding(Encoding):
         end = contents.index(AsciiEncoding.argument_beginner)
         return contents[:end]
 
+
+# Here's the fundamental problem with binary encoding. Either we make the transmitted and received arguments purely
+# positional, in which case they must be of fixed length, or we make them variable, in which case we need a way of
+# separating them. It's not obvious to me how to do this, when the binary-encoded stuff can take any value.
+# The argument beginner and enders are easy - we just don't need them. Our encoding identifier can simply be a
+# single- or two-byte sequence, and our exchange terminator has to be a longer sequence.
+# The problem with this is that we can't enforce a single schema. How does JSON get binary-encoded?
+# Looks like protobufs solve this by adding the type in the message itself. Perhaps this is what I have instead of
+# the name of the argument. Have its type. Each type should have a pre-defined length, with the exception of strings,
+# which will need to have a variable length and will need to be handled separately. For the time being, we could just
+# prevent strings from being used in binary encodings and I think for most people that would be acceptable.
+class BinaryEncoding(Encoding):
+    argument_beginner = b''
+    argument_ender = b''
+    argument_assigner = b''
+    argument_delimiter = b''
+    exchange_terminator = b'\0\n\r'
+    argument_signifiers = {
+        float: b'1',
+        int: b'2',
+    }
+    argument_formats = {
+        float: 'f',
+        int: 'i',
+    }
+    exchange_identifier_bytes = 2
+
+    @staticmethod
+    def encode(exchange: Type[Exchange], values: Mapping, is_request: bool) -> bytes:
+        if len(exchange.identifier()) != BinaryEncoding.exchange_identifier_bytes:
+            raise AssertionError("Exchange identifier must be exactly two bytes")
+        if type(exchange.identifier()) is not bytes:
+            raise AssertionError("Exchange identifier must have type bytes")
+
+        arg_bytes = BinaryEncoding._encode_args(exchange=exchange, values=values, is_request=is_request)
+        return exchange.identifier() + arg_bytes + BinaryEncoding.exchange_terminator
+
+    @staticmethod
+    def _encode_args(exchange: Type[Exchange], is_request: bool, values: Mapping[str, Any]):
+        if is_request:
+            request_fields = fields(exchange.Request)
+        else:
+            request_fields = fields(exchange.Response)
+
+        arg_bytes = b''
+
+        for field in request_fields:
+            if field.type not in BinaryEncoding.argument_formats.keys():
+                raise AssertionError(f"Cannot handle binary field type {field.type}.")
+
+            fmt = BinaryEncoding.argument_formats[field.type]
+            arg_bytes += BinaryEncoding.argument_signifiers[field.type]
+
+            binary_representation = struct.pack(fmt, values[field.name])
+            arg_bytes += binary_representation
+
+        return arg_bytes
+
+    def decode(exchange: Type[Exchange], contents: bytes) -> DecodedExchange:
+        pass

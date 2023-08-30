@@ -1,4 +1,7 @@
-from hardsync.encodings import AsciiEncoding
+import pytest
+import struct
+
+from hardsync.encodings import AsciiEncoding, BinaryEncoding
 from hardsync.interfaces import Exchange
 from hardsync.types import DecodedExchange
 from dataclasses import dataclass, fields
@@ -87,3 +90,61 @@ def test_decode_ping_response():
     desired = DecodedExchange(name='PingResponse', values={})
     actual = AsciiEncoding.decode(exchange=Ping, contents=to_decode)
     assert actual == desired
+
+
+class BinaryPing(Exchange):
+    @classmethod
+    def identifier(cls) -> bytes:
+        return b'\x00\x01'
+
+    @dataclass
+    class Request:
+        pass
+
+    @dataclass
+    class Response:
+        pass
+
+
+def test_binary_encode_wrong_length():
+    class WrongPing(BinaryPing):
+        @classmethod
+        def identifier(cls) -> bytes:
+            return b'1'
+
+    with pytest.raises(AssertionError):
+        BinaryEncoding.encode(exchange=BinaryPing, is_request=False, values={})
+
+
+def test_binary_encode_wrong_type():
+    class WrongPing(BinaryPing):
+        @classmethod
+        def identifier(cls) -> str:
+            return '1'
+
+    with pytest.raises(AssertionError):
+        BinaryEncoding.encode(exchange=BinaryPing, is_request=False, values={})
+
+
+def test_binary_encode_ping():
+    actual = BinaryEncoding.encode(exchange=BinaryPing, is_request=False, values={})
+    desired = b'\x00\x01' + BinaryEncoding.exchange_terminator
+    assert actual == desired
+
+
+def test_binary_encode_measure_voltage():
+    class MeasureVoltageBinary(MeasureVoltage):
+        @classmethod
+        def identifier(cls):
+            return b'\x00\x02'
+
+    values = {'channel': 25, 'integration_time': 1.05}
+    actual = BinaryEncoding.encode(exchange=MeasureVoltageBinary, is_request=True, values={})
+    desired = \
+        b'\x00\x01' + \
+        BinaryEncoding.argument_signifiers[int] + struct.pack('i') + values['channel'] + \
+        BinaryEncoding.argument_signifiers[float] + struct.pack('f', values['integration_time']) + \
+        BinaryEncoding.exchange_terminator
+
+    assert actual == desired
+
