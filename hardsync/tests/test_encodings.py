@@ -95,7 +95,7 @@ def test_decode_ping_response():
 class BinaryPing(Exchange):
     @classmethod
     def identifier(cls) -> bytes:
-        return b'\x00\x01'
+        return b'\x01'
 
     @dataclass
     class Request:
@@ -123,12 +123,28 @@ def test_binary_encode_wrong_type():
             return '1'
 
     with pytest.raises(AssertionError):
-        BinaryEncoding.encode(exchange=BinaryPing, is_request=False, values={})
+        BinaryEncoding.encode(exchange=WrongPing, is_request=False, values={})
 
 
-def test_binary_encode_ping():
+def test_binary_encoding_bad_identifier():
+    class WrongPing(BinaryPing):
+        @classmethod
+        def identifier(cls) -> bytes:
+            return bytes([0b1000_0000])
+
+    with pytest.raises(AssertionError):
+        BinaryEncoding.encode(exchange=WrongPing, is_request=False, values={})
+
+
+def test_binary_encode_ping_response():
     actual = BinaryEncoding.encode(exchange=BinaryPing, is_request=False, values={})
-    desired = b'\x00\x01' + BinaryEncoding.exchange_terminator
+    desired = b'\x00\x00\x01' # Zero payload length, identifier of 1
+    assert actual == desired
+
+
+def test_binary_encode_ping_request():
+    actual = BinaryEncoding.encode(exchange=BinaryPing, is_request=True, values={})
+    desired = b'\x00\x00\x81' # Zero payload length, identifier of 1
     assert actual == desired
 
 
@@ -136,15 +152,28 @@ def test_binary_encode_measure_voltage():
     class MeasureVoltageBinary(MeasureVoltage):
         @classmethod
         def identifier(cls):
-            return b'\x00\x02'
+            return b'\x02'
 
     values = {'channel': 25, 'integration_time': 1.05}
-    actual = BinaryEncoding.encode(exchange=MeasureVoltageBinary, is_request=True, values={})
-    desired = \
-        b'\x00\x01' + \
-        BinaryEncoding.argument_signifiers[int] + struct.pack('i') + values['channel'] + \
-        BinaryEncoding.argument_signifiers[float] + struct.pack('f', values['integration_time']) + \
-        BinaryEncoding.exchange_terminator
+    actual = BinaryEncoding.encode(exchange=MeasureVoltageBinary, is_request=True, values=values)
 
-    assert actual == desired
+    desired_num_bytes = b'\x0A\x00'
+    assert actual[0:2] == desired_num_bytes
+
+    desired_identifier = b'\x82'
+    assert actual[2:3] == desired_identifier
+
+    desired_int_signifier = BinaryEncoding.argument_signifiers[int]
+    assert actual[3:4] == desired_int_signifier
+
+    desired_int_payload = b'\x19\x00\x00\x00'
+    assert actual[4:8] == desired_int_payload
+
+    desired_float_signifier = BinaryEncoding.argument_signifiers[float]
+    assert actual[8:9] == desired_float_signifier
+
+    desired_float_payload = struct.pack('<f', values['integration_time'])
+    assert actual[9:13] == desired_float_payload
+
+    assert len(actual) == 13
 

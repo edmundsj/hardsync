@@ -4,7 +4,7 @@
 Traditionally, when developing embedded applications, the software and firmware are developed separately. Often, the most time-consuming piece of the entire process is deciding on and implementing a communication protocol between the software and embedded device.
 
 ## How hardsync solves this
-Hardsync attempts to solve this with a different approach. Instead of writing one set of code on your target embedded system (for example, an Arduino) and one set of code on your computer to communicate with the Arduino, you write a *single* contract and then dynamically generate code which you can import from your firmware and software that handles all the communication for you.
+Instead of writing one set of code on your target embedded system (for example, an Arduino) and one set of code on your computer to communicate with the Arduino, you write a *single* contract and then dynamically generate code which you can import from your firmware and software that handles all the communication for you.
 
 You no longer have to worry about encodings, termination characters, error handling, device discovery, or any of the other painful, repetitive, and stupid things about communicating with embedded systems. Hardsync handles all this for you, so you can focus on what matters - your application code.
 
@@ -183,3 +183,6 @@ Hardync, by default, assumes that your device can communicate over a serial inte
 
 ### Why don't I put my device serial number in the contract?
 Initially, this was the plan - everything required for communication from host to device would be included in the contract. This adds a bit of reliability and predcitability when you are working with a single device. However, this has a few serious drawbacks. The first is that contracts tied to a single device, and can't be shared between people working on the same type of hardware, or identical clones of the same piece of hardware. The second issue is that it wouldn't be possible to run multiple devices on the same system using the same contract, which is a common use-case. The final issue is more fundamental - a contract should specify the *interface* between a host and device, and ideally is not specific to a *particular* host or *particular* device. So long as they have the required libraries, it should work. For this reason, I decided the best option is to pass in the device identifier (serial number) at runtime. If one is not passed in, the auto-discovery mechanism will attempt to find a device.
+
+# Contributors
+- GPT-4 wrote or refactored about 70% of the code in this package

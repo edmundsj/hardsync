@@ -84,31 +84,57 @@ class AsciiEncoding(Encoding):
 # the name of the argument. Have its type. Each type should have a pre-defined length, with the exception of strings,
 # which will need to have a variable length and will need to be handled separately. For the time being, we could just
 # prevent strings from being used in binary encodings and I think for most people that would be acceptable.
+# DEFAULT ENCODING
+# payload bytes [2 bytes] + request/response identifier [1 byte] + argument payload [>2 bytes]
+# Exmaple: two arguments, one four-byte integer and one four-byte floating point number
+# Total length: 13 bytes
+# Payload length: 11 bytes
+# Payload header length: 2 bytes (1 + 1)
+# Payload data length: 8 bytes (4 + 4)
+# Header: 0x00_0B (payload of 11 bytes)
+# Identifier: 0b1000_0001 (this is a request, indicated by a leading 1, with identifier of 1)
+# Payload: 0b0000_0001 [4 bytes for floating-point number] 0b0000_0010 [4 bytes for integer]
+# Compared to the equivalent ASCII encoding, this is about 4x more byte efficient.
+# TODO: Handle things which are not little-endian.
+
 class BinaryEncoding(Encoding):
     argument_beginner = b''
     argument_ender = b''
     argument_assigner = b''
     argument_delimiter = b''
-    exchange_terminator = b'\0\n\r'
+    exchange_terminator = b''
+    is_request_mask = 0b1000_0000
     argument_signifiers = {
         float: b'1',
         int: b'2',
+        str: b'3',
     }
     argument_formats = {
         float: 'f',
         int: 'i',
     }
-    exchange_identifier_bytes = 2
+    exchange_identifier_bytes = 1
 
     @staticmethod
     def encode(exchange: Type[Exchange], values: Mapping, is_request: bool) -> bytes:
         if len(exchange.identifier()) != BinaryEncoding.exchange_identifier_bytes:
-            raise AssertionError("Exchange identifier must be exactly two bytes")
+            raise AssertionError(f"Exchange identifier must be exactly {BinaryEncoding.exchange_identifier_bytes} byte(s)")
         if type(exchange.identifier()) is not bytes:
             raise AssertionError("Exchange identifier must have type bytes")
+        exchange_identifier_int = int.from_bytes(exchange.identifier(), byteorder='little')
+        if exchange_identifier_int & BinaryEncoding.is_request_mask != 0:
+            raise AssertionError("Exchange identifier must not overlap with request identifier bitmask")
 
         arg_bytes = BinaryEncoding._encode_args(exchange=exchange, values=values, is_request=is_request)
-        return exchange.identifier() + arg_bytes + BinaryEncoding.exchange_terminator
+        identifier = exchange_identifier_int
+        if is_request:
+            identifier |= BinaryEncoding.is_request_mask
+
+        payload_bytes = len(arg_bytes)
+
+        header = struct.pack('<H', payload_bytes)
+
+        return header + bytes([identifier]) + arg_bytes
 
     @staticmethod
     def _encode_args(exchange: Type[Exchange], is_request: bool, values: Mapping[str, Any]):
