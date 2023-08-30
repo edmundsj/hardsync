@@ -3,6 +3,7 @@ import os.path
 from hardsync.interfaces import Exchange
 from hardsync.generators.python import exchange_definition, request_function, generate
 from hardsync.generators.common import PYTHON_INDENT
+from hardsync.defaults import DEFAULT_CHANNEL
 from dataclasses import dataclass
 from types import ModuleType
 from pathlib import Path
@@ -97,6 +98,7 @@ def test_generate_request_for_current_reading():
 def test_populate_template():
     module = ModuleType('hi')
     module.MeasureVoltage = MeasureVoltage
+    module.Channel = DEFAULT_CHANNEL
     desired_filename = 'client.py'
 
     files = generate(contract=module)

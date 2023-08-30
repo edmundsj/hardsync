@@ -4,11 +4,19 @@ from dataclasses import is_dataclass, fields
 from typing import Type, Sequence, List, Any, TypeVar
 import os
 from hardsync.generators.common import convert_case, CaseType, populate_template, Language, PYTHON_INDENT
+from hardsync.interfaces import Channel, Contract
 from hardsync.utils import flatten
 from hardsync.dynamics import get_exchanges
 from hardsync.types import PopulatedFile
 from pathlib import Path
 from types import ModuleType
+
+
+def channel_declaration(channel: Type[Channel]) -> List[str]:
+    lines = [
+        f"channel: Channel = SerialChannel(baud_rate={channel.baud_rate}, channel_identifier='')"
+    ]
+    return lines
 
 
 def exchange_definition(cls: Type) -> List[str]:
@@ -64,7 +72,7 @@ def request_function(cls: Type) -> List[str]:
     return lines
 
 
-def generate(contract: ModuleType) -> List[PopulatedFile]:
+def generate(contract: Contract) -> List[PopulatedFile]:
     dir_name = Path(os.path.dirname(os.path.abspath(__file__)))
     template_filename = dir_name / 'templates' / 'client.py'
     exchanges = get_exchanges(module=contract)
@@ -76,6 +84,7 @@ def generate(contract: ModuleType) -> List[PopulatedFile]:
     replacements = {
         'exchange_definitions': exchange_lines,
         'request_definitions': request_lines,
+        'channel_declaration': channel_declaration(channel=contract.Channel)
     }
 
     with open(template_filename, 'r') as template_file:

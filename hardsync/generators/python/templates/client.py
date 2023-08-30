@@ -26,7 +26,7 @@ class Ping(Exchange):
 # {{exchange_definitions}}
 @dataclass
 class Client(BaseClient):
-    channel: Channel = SerialChannel(baud_rate=9600, channel_identifier='')
+    # {{channel_declaration}}
     encoding: Type[Encoding] = AsciiEncoding
 
     def request_ping(self) -> DecodedExchange:
