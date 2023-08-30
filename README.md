@@ -125,7 +125,7 @@ This library is under active development. If you have a feature request, or want
 - Break out config into separate config.py module, heavily test
 - Add example with how to override device serial number
 - Verify that generated client-side code is valid python
-- Set up CI for automatic testing and publishing to PyPi
+- Set up CD for automatic publishing to PyPi
 - Implement hardsync.ini file, static configuration
 - Support for multi-hardsync device discovery on same machine
 - More tests to verify edge cases, especially around type conversion and multiple arguments
@@ -136,12 +136,10 @@ This library is under active development. If you have a feature request, or want
 - "time" types
 - Casting of non-string request types when received by device
 - Support specifying the output directories with a config file in a project
-- Add @asciiencoding, @utf8encoding, and @binaryencoding decorators
 - Add header with number of transmitted bytes as option with @validate_transmission wrapper
-- Add @jsonencoding decorator and implementation
+- Add JsonEncoding implementation
 - Add @retryable decorator and implementation to Exchange class
-- Add retries on non-error response.
-- Add optional timeouts
+- Add timeouts on client-side
 - Client-side async support
 - Add a hash of the contract used to generate auto-generated files
 - Add verilog target

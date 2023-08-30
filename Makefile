@@ -15,7 +15,7 @@ test: clean
 	arduino-cli compile --fqbn arduino:avr:uno generated/firmware
 
 sync:
-	python3 sync.py --hash $$(git rev-parse HEAD)  # updates the version and hash
+	poetry run python sync.py --hash $$(git rev-parse HEAD)  # updates the version and hash
 
 clean:
 	rm -rf generated
