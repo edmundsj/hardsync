@@ -74,16 +74,6 @@ class AsciiEncoding(Encoding):
         return contents[:end]
 
 
-# Here's the fundamental problem with binary encoding. Either we make the transmitted and received arguments purely
-# positional, in which case they must be of fixed length, or we make them variable, in which case we need a way of
-# separating them. It's not obvious to me how to do this, when the binary-encoded stuff can take any value.
-# The argument beginner and enders are easy - we just don't need them. Our encoding identifier can simply be a
-# single- or two-byte sequence, and our exchange terminator has to be a longer sequence.
-# The problem with this is that we can't enforce a single schema. How does JSON get binary-encoded?
-# Looks like protobufs solve this by adding the type in the message itself. Perhaps this is what I have instead of
-# the name of the argument. Have its type. Each type should have a pre-defined length, with the exception of strings,
-# which will need to have a variable length and will need to be handled separately. For the time being, we could just
-# prevent strings from being used in binary encodings and I think for most people that would be acceptable.
 # DEFAULT ENCODING
 # payload bytes [2 bytes] + request/response identifier [1 byte] + argument payload [>2 bytes]
 # Exmaple: two arguments, one four-byte integer and one four-byte floating point number
@@ -116,7 +106,17 @@ class BinaryEncoding(Encoding):
     exchange_identifier_bytes = 1
 
     @staticmethod
-    def encode(exchange: Type[Exchange], values: Mapping, is_request: bool) -> bytes:
+    def encode(exchange: Type[Exchange], values: Mapping[str, Any], is_request: bool) -> bytes:
+        BinaryEncoding._validate(exchange=exchange, is_request=is_request, values=values)
+
+        header = BinaryEncoding._header(exchange=exchange, is_request=is_request, values=values)
+        arg_bytes = BinaryEncoding._encode_args(exchange=exchange, is_request=is_request, values=values)
+        identifier = BinaryEncoding._identifier(exchange=exchange, is_request=is_request)
+
+        return header + identifier + arg_bytes
+
+    @staticmethod
+    def _validate(exchange: Type[Exchange], values: Mapping[str, Any], is_request: bool):
         if len(exchange.identifier()) != BinaryEncoding.exchange_identifier_bytes:
             raise AssertionError(f"Exchange identifier must be exactly {BinaryEncoding.exchange_identifier_bytes} byte(s)")
         if type(exchange.identifier()) is not bytes:
@@ -125,16 +125,19 @@ class BinaryEncoding(Encoding):
         if exchange_identifier_int & BinaryEncoding.is_request_mask != 0:
             raise AssertionError("Exchange identifier must not overlap with request identifier bitmask")
 
-        arg_bytes = BinaryEncoding._encode_args(exchange=exchange, values=values, is_request=is_request)
-        identifier = exchange_identifier_int
+    @staticmethod
+    def _identifier(exchange: Type[Exchange], is_request: bool):
+        identifier = int.from_bytes(exchange.identifier(), byteorder='little')
         if is_request:
             identifier |= BinaryEncoding.is_request_mask
 
-        payload_bytes = len(arg_bytes)
+        return bytes([identifier])
 
-        header = struct.pack('<H', payload_bytes)
-
-        return header + bytes([identifier]) + arg_bytes
+    @staticmethod
+    def _header(exchange: Type[Exchange], values: Mapping, is_request: bool):
+        arg_bytes = BinaryEncoding._encode_args(exchange=exchange, values=values, is_request=is_request)
+        header = struct.pack('<H', len(arg_bytes))
+        return header
 
     @staticmethod
     def _encode_args(exchange: Type[Exchange], is_request: bool, values: Mapping[str, Any]):
