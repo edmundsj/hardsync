@@ -116,8 +116,6 @@ NOTE: Baud rates cannot be an arbitrary number, but must be one of the standard 
 This library is under active development. If you have a feature request, or want to change the priority of planned features (see below), submit an issue on this repository.
 
 ## Planned features (in order of priority)
-- Add ability to override default baud rate
-- Add example with how to override baud rate
 - Support for device-initiated request/response pairs
 - Support for fixed-size arrays in requests and responses
 - Support for binary encoding
