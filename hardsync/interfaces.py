@@ -62,7 +62,6 @@ class Exchange(ABC):
 # instance methods.
 @dataclass
 class Channel(ABC):
-    baud_rate: BaudRateT
 
     @abstractmethod
     def open(self) -> Serial:

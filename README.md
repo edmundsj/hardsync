@@ -116,9 +116,10 @@ NOTE: Baud rates cannot be an arbitrary number, but must be one of the standard 
 This library is under active development. If you have a feature request, or want to change the priority of planned features (see below), submit an issue on this repository.
 
 ## Planned features (in order of priority)
-- Support for device-initiated request/response pairs
-- Support for fixed-size arrays in requests and responses
+- End-to-end automated testing of interacting programs
 - Support for binary encoding
+- Support for fixed-size arrays in requests and responses
+- Support for device-initiated request/response pairs
 - Add channel.write wrapper around Serial.print statements to reduce dynamic memory, Serial library flexibility
 - Support for multiple response fields
 - Variable-size arrays in requests and responses
