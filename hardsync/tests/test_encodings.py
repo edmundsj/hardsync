@@ -177,3 +177,9 @@ def test_binary_encode_measure_voltage():
 
     assert len(actual) == 13
 
+def test_binary_decode():
+    pass
+
+def test_binary_autoencode():
+    pass
+

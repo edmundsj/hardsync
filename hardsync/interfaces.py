@@ -27,7 +27,7 @@ class Encoding(ABC):
 
     @staticmethod
     @abstractmethod
-    def decode(exchange: Type[Exchange], contents: bytes) -> DecodedExchange:
+    def decode(exchange_map: Mapping[str | bytes, Type[Exchange]], contents: bytes) -> DecodedExchange:
         pass
 
 
@@ -46,6 +46,10 @@ class TypeMapping:
 class Exchange(ABC):
     @classmethod
     def identifier(cls):
+        return cls.__name__
+
+    @classmethod
+    def name(cls):
         return cls.__name__
 
     @dataclass

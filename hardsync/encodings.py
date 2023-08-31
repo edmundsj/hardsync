@@ -1,6 +1,6 @@
-from typing import Type, Mapping, Dict, Collection, Any
+from typing import Type, Mapping, Dict, Collection, Any, Optional
 from hardsync.interfaces import Encoding, Exchange
-from hardsync.types import FieldNotFoundError, ResponseValues, DecodedExchange, Stringable
+from hardsync.types import FieldNotFoundError, ResponseValues, DecodedExchange, Stringable, bidict
 from dataclasses import Field, fields
 import struct
 
@@ -99,6 +99,11 @@ class BinaryEncoding(Encoding):
         int: b'2',
         str: b'3',
     }
+    argument_signifiers_inverse = {
+        b'1': float,
+        b'2': int,
+        b'3': str,
+    }
     argument_formats = {
         float: 'f',
         int: 'i',
@@ -160,5 +165,59 @@ class BinaryEncoding(Encoding):
 
         return arg_bytes
 
-    def decode(exchange: Type[Exchange], contents: bytes) -> DecodedExchange:
-        pass
+    @staticmethod
+    def decode(exchange_map: Mapping[bytes, Type[Exchange]], contents: bytes) -> DecodedExchange:
+        if len(contents) < 3:
+            raise AssertionError("Cannot decode fewer than 3 bytes. Violates binary encoding.")
+
+        length = struct.unpack('<H', contents[0:2])
+        actual_length = len(contents) - 3
+        if actual_length != length:
+            raise AssertionError(f"Expected number of bytes {length} less than actual number of bytes {actual_length}")
+
+        exchange_bytes = contents[2:3]
+        is_request = BinaryEncoding._is_request(exchange_bytes=exchange_bytes)
+
+        exchange_id = bytes([int.from_bytes(exchange_bytes, byteorder='little') & ~BinaryEncoding.is_request_mask])
+        exchange = exchange_map[exchange_id]
+
+        name = 'Exchange'
+        if is_request:
+            name += "Request"
+        else:
+            name += "Response"
+
+        if actual_length > 3:
+            payload = contents[3:]
+        else:
+            payload = b''
+
+        response_vals = BinaryEncoding._decode_args(exchange=exchange, contents=payload, return_vals=None)
+        return DecodedExchange(name=name, values=response_vals)
+
+    @staticmethod
+    def _is_request(exchange_bytes: bytes):
+        return int.from_bytes(exchange_bytes, byteorder='little') | BinaryEncoding.is_request_mask
+
+    @staticmethod
+    def _decode_args(exchange: Type[Exchange], contents: bytes, return_vals: Optional[Mapping] = None) -> ResponseValues:
+        if return_vals is None:
+            return_vals = {}
+
+        next_arg_signifier = contents[0:1]
+        arg_type = BinaryEncoding.argument_signifiers_inverse[next_arg_signifier]
+        arg_format = BinaryEncoding.argument_formats[arg_type]
+
+        required_bytes = struct.calcsize(arg_format)
+        end_index = required_bytes + 1
+        next_arg_bytes = contents[1:end_index]
+
+        arg_value = struct.unpack(arg_format, next_arg_bytes)
+        # TODO: WE NEED TO LOOK UP THE EXCHANGE FIELD NAME FROM THE EXCHANGE GIVEN ITS POSITION
+        return_vals['exchange_field_name'] = arg_value
+
+        if len(contents) == end_index:
+            return return_vals
+
+        BinaryEncoding._decode_args(exchange=exchange, contents=contents[end_index:], return_vals=return_vals)
+
